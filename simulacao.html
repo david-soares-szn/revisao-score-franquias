@@ -152,6 +152,7 @@ tr.det td { white-space: normal; background: var(--bg); padding: 16px; }
 tr.sub td { color: var(--muted); font-size: 13px; }
 tr.sub td:first-child { padding-left: 22px; }
 .oc { color: var(--crit); font-weight: 600; }
+.fator { display: block; text-align: right; font-size: 11.5px; color: var(--muted); margin-top: 2px; }
 </style>
 
 <div class="wrap">
@@ -356,7 +357,7 @@ function regras(o) {
   const total = Object.values(P).reduce((a, c) => a + c, 0);
   $("escHelp").textContent = `Blocos somam ${total}; com bônus, o máximo é ${total + BONUS_TETO}. Excelente a partir de 95.`;
   $("notHelp").textContent = o.not === "degraus" ? "Degraus de 0 a 5 em cada canal; nota 5 só a partir de 4,80." : "Conta de hoje: linear de 4,0 a 5,0.";
-  $("manHelp").textContent = o.man === "cinco" ? "Regra atual: sem card concluído no mês, nota 5." : "Sem card concluído no mês, o bloco sai e o score é proporcional.";
+  $("manHelp").textContent = o.man === "cinco" ? "Regra atual: sem card concluído no mês, nota 5." : "Sem card concluído no mês, a manutenção sai e os outros blocos são normalizados para 105 (× 1,24).";
 }
 
 function medias(o) {
@@ -416,7 +417,7 @@ function boletim(r, o) {
     h += linha(BLOCO.manut, res, notaChip(b.manut.nota), `${br(b.manut.pts, 1)} de ${P.manut}`, P.manut, prox);
   }
   h += linha(BLOCO.cards, pc(b.cards.v), "", `${br(b.cards.pts, 1)} de ${P.cards}`, P.cards, `% fechado × ${P.cards}.`);
-  const prop = c.somaPesos < c.total ? `<div class="ln"><span>Convertido para ${c.total}</span><span>${br(c.soma, 1)} de ${c.somaPesos} → ${br(c.base, 1)}</span></div>` : "";
+  const prop = c.somaPesos < c.total ? `<div class="ln"><span>Normalizado para ${c.total} (× ${br(c.total / c.somaPesos, 2)})</span><span>${br(c.soma, 1)} de ${c.somaPesos} → ${br(c.base, 1)}</span></div><span class="why">O bloco sem dado sai da conta e os outros ocupam o espaço dele na mesma proporção.</span>` : "";
   const bonusTxt = [c.bInd ? `indicações +${br(c.bInd, 0)}` : "", c.bAir ? "Airbnb ≥ 4,90 +5" : ""].filter(Boolean).join(", ");
   return `<div class="boletim"><div class="tbl"><table>
       <thead><tr><th>Bloco</th><th>Resultado</th><th>Nota</th><th class="num">Pontos</th><th>Próxima nota</th></tr></thead>
@@ -452,7 +453,7 @@ function tabela(o) {
     const ab = abertos.has(r.h);
     return `<tr class="row${ab ? " open" : ""}" data-h="${r.h}"><td class="name">${r.n}<small><button class="toggle" type="button" aria-expanded="${ab}">${ab ? "Fechar boletim" : "Ver boletim"}</button> · ID ${r.h}</small></td>
       <td class="sc"><div class="cell"><span class="s">${br(r.sa, 1)}</span><span class="pill f-${r.fa}">${r.fa}</span></div></td>
-      <td class="sc"><div class="cell">${dl}<span class="s">${br(c.s, 1)}</span><span class="pill f-${c.f}">${c.f}</span></div></td>
+      <td class="sc"><div class="cell">${dl}<span class="s">${br(c.s, 1)}</span><span class="pill f-${c.f}">${c.f}</span></div>${c.somaPesos < c.total ? `<span class="fator">blocos × ${br(c.total / c.somaPesos, 2)} (sem ${Object.keys(c.P).filter(k => c.b[k] == null).map(k => ({ notas: "notas", aval: "avaliações", uso: "uso", manut: "manutenção", cards: "cards" })[k]).join(", ")})</span>` : ""}</td>
       ${ks.map((k, i) => `<td class="num${i === 0 ? " sc" : ""}">${c.b[k] == null ? "–" : br(c.b[k].pts, 1)}</td>`).join("")}
       <td class="sc num">${c.bonus ? "+" + c.bonus : "0"}</td><td class="num">${c.pen ? "−" + c.pen : "0"}</td></tr>` +
       (ab ? `<tr class="det"><td colspan="${cols}">${boletim(r, o)}</td></tr>` : "");
