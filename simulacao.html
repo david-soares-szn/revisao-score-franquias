@@ -270,10 +270,17 @@ function opcoes() {
 function calcula(r, o) {
   const P = PESOS[o.esc], b = {}, oc = [];
   // notas
-  const comb = r.a != null && r.o != null ? 0.6 * r.a + 0.4 * r.o : (r.a != null ? r.a : r.o);
-  if (comb == null) b.notas = null;
-  else if (o.not === "degraus") { const n = degrau(comb, DEG.notas); b.notas = { comb, nota: n, pts: n / 5 * P.notas }; }
-  else b.notas = { comb, pts: Math.max(0, comb - 4) * P.notas };
+  // cada canal tem a sua nota; Airbnb pesa 60% e outras OTAs 40% (só um canal = 100% dele), como hoje
+  const wA = r.a != null && r.o != null ? 0.6 : (r.a != null ? 1 : 0), wO = 1 - wA;
+  if (r.a == null && r.o == null) b.notas = null;
+  else if (o.not === "degraus") {
+    const nA = r.a != null ? degrau(r.a, DEG.notas) : null, nO = r.o != null ? degrau(r.o, DEG.notas) : null;
+    const nota = (nA || 0) * wA + (nO || 0) * wO;
+    b.notas = { nA, nO, wA, wO, nota, pts: nota / 5 * P.notas };
+  } else {
+    const v = (r.a != null ? (r.a - 4) * wA : 0) + (r.o != null ? (r.o - 4) * wO : 0);
+    b.notas = { wA, wO, pts: Math.max(0, v) * P.notas };
+  }
   // avaliações por checkout
   const na = degrau(r.av, DEG.aval);
   if (r.av < 0.5) oc.push("Avaliações por checkout abaixo de 50%");
@@ -336,7 +343,7 @@ function regras(o) {
   const P = PESOS[o.esc];
   const tabDeg = (lims, fmt) => `<table><tbody>${[5, 4, 3, 2, 1].map(n => `<tr><td>${notaChip(n)}</td><td>${fmt(lims[n - 1])} ou mais</td></tr>`).join("")}<tr><td>${notaChip(0)}</td><td>abaixo de ${fmt(lims[0])}</td></tr></tbody></table>`;
   const notas = o.not === "degraus"
-    ? `${tabDeg(DEG.notas, v => br(v, 2))}<p>Média de check-in e limpeza dos últimos 3 meses (Airbnb 60%, outras OTAs 40%). Nota 5 só a partir de 4,80.</p>`
+    ? `${tabDeg(DEG.notas, v => br(v, 2))}<p>A tabela vale para cada canal separado: nota do Airbnb e nota das outras OTAs (check-in e limpeza, últimos 3 meses). Depois, Airbnb pesa 60% e outras OTAs 40%, como hoje. Nota 5 só a partir de 4,80.</p>`
     : `<p>Como hoje: (média − 4,0) × ${P.notas}. Média 4,0 vale 0; só 5,0 vale os ${P.notas} pontos. Média de check-in e limpeza dos últimos 3 meses (Airbnb 60%, outras OTAs 40%).</p>`;
   $("rules").innerHTML = `
     <div class="rule-box"><h3>${BLOCO.notas}<span>${P.notas} pts</span></h3>${notas}</div>
@@ -348,7 +355,7 @@ function regras(o) {
     <div class="rule-box"><h3>Bônus e ocorrências<span>até +${BONUS_TETO}</span></h3><p>Bônus: indicações (como hoje) e <b>+5 com Airbnb 4,90 ou mais</b>. O total do bônus não passa de ${BONUS_TETO}.</p><p>Ocorrências do mês tiram os pontos do app de Qualidade, mais −1 por critério abaixo de 50%.</p></div>`;
   const total = Object.values(P).reduce((a, c) => a + c, 0);
   $("escHelp").textContent = `Blocos somam ${total}; com bônus, o máximo é ${total + BONUS_TETO}. Excelente a partir de 95.`;
-  $("notHelp").textContent = o.not === "degraus" ? "Degraus de 0 a 5; nota 5 só com média 4,80 ou mais." : "Conta de hoje: linear de 4,0 a 5,0.";
+  $("notHelp").textContent = o.not === "degraus" ? "Degraus de 0 a 5 em cada canal; nota 5 só a partir de 4,80." : "Conta de hoje: linear de 4,0 a 5,0.";
   $("manHelp").textContent = o.man === "cinco" ? "Regra atual: sem card concluído no mês, nota 5." : "Sem card concluído no mês, o bloco sai e o score é proporcional.";
 }
 
@@ -375,10 +382,16 @@ function boletim(r, o) {
   // notas
   if (!b.notas) h += linha(BLOCO.notas, "sem avaliações", "", "não entra", P.notas, "O bloco sai e o score é proporcional.");
   else {
-    const det = `${r.a != null ? "Airbnb " + br(r.a, 2) : ""}${r.a != null && r.o != null ? " · " : ""}${r.o != null ? "OTAs " + br(r.o, 2) : ""}${r.a != null && r.o != null ? ` → média ${br(b.notas.comb, 2)}` : ""}`;
+    const pesoTxt = w => br(w * 100, 0) + "%";
     h += o.not === "degraus"
-      ? linha(BLOCO.notas, det, notaChip(b.notas.nota), `${br(b.notas.pts, 1)} de ${P.notas}`, P.notas, proxNota(b.notas.comb, DEG.notas, v => br(v, 2)))
-      : linha(BLOCO.notas, det, "", `${br(b.notas.pts, 1)} de ${P.notas}`, P.notas, `(${br(b.notas.comb, 2)} − 4,00) × ${P.notas}. Cada 0,10 a mais vale ${br(P.notas / 10, 1)} pontos.`);
+      ? linha(BLOCO.notas, "média ponderada das notas dos canais", br(b.notas.nota, 1), `${br(b.notas.pts, 1)} de ${P.notas}`, P.notas, "")
+      : linha(BLOCO.notas, "como hoje: (média − 4,00) × peso, por canal", "", `${br(b.notas.pts, 1)} de ${P.notas}`, P.notas, "");
+    for (const [v, n, w, nome] of [[r.a, b.notas.nA, b.notas.wA, "Airbnb"], [r.o, b.notas.nO, b.notas.wO, "Outras OTAs"]]) {
+      if (v == null) { h += linha(nome, "sem avaliações", "", "", "", "Não entra; o outro canal vale 100%.", "sub"); continue; }
+      h += o.not === "degraus"
+        ? linha(nome, `${br(v, 2)} <span class="muted">(peso ${pesoTxt(w)})</span>`, notaChip(n), "", "", proxNota(v, DEG.notas, x => br(x, 2)), "sub")
+        : linha(nome, `${br(v, 2)} <span class="muted">(peso ${pesoTxt(w)})</span>`, "", `${br(Math.max(0, v - 4) * w * P.notas, 1)}`, "", `Cada 0,10 a mais vale ${br(P.notas / 10 * w, 1)} pontos.`, "sub");
+    }
   }
   // avaliações
   h += linha(BLOCO.aval, pc(b.aval.v), notaChip(b.aval.nota), `${br(b.aval.pts, 1)} de ${P.aval}`, P.aval,

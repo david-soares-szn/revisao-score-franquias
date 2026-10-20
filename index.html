@@ -156,7 +156,7 @@ a { color: var(--accent); }
     <thead><tr><th>Critério</th><th>Hoje</th><th>Proposta</th><th>O que muda</th></tr></thead>
     <tbody>
       <tr class="grp"><td colspan="4">Ficam ou mudam</td></tr>
-      <tr><td>Notas dos hóspedes (check-in e limpeza, 3 meses, Airbnb 60% e OTAs 40%)</td><td>50 pontos, linear</td><td><span class="pill chg">Muda</span></td><td>Degraus de 0 a 5; nota 5 só com média de 4,80 ou mais</td></tr>
+      <tr><td>Notas dos hóspedes (check-in e limpeza, 3 meses, Airbnb 60% e OTAs 40%)</td><td>50 pontos, linear</td><td><span class="pill chg">Muda</span></td><td>Degraus de 0 a 5 em cada canal; nota 5 só a partir de 4,80</td></tr>
       <tr><td>Avaliações por checkout</td><td>15 pontos, linear</td><td><span class="pill chg">Muda</span></td><td>20 pontos; abaixo de 50% zera e gera ocorrência; degraus até 70%</td></tr>
       <tr><td>Resolução de manutenções</td><td>~1,7 ponto</td><td><span class="pill chg">Muda</span></td><td>20 pontos, regra de hoje sem a carência de 7 dias e sem os cards do proprietário</td></tr>
       <tr><td>Cards de check-in e checkout</td><td>~1,7 ponto</td><td><span class="pill chg">Muda</span></td><td>10 pontos, mesma regra de hoje</td></tr>
@@ -204,7 +204,7 @@ a { color: var(--accent); }
   <div class="regras">
     <div class="opt"><h4>Notas dos hóspedes</h4>
       <table><tbody><tr><td><b>5</b></td><td>4,80 ou mais</td></tr><tr><td><b>4</b></td><td>4,70</td></tr><tr><td><b>3</b></td><td>4,60</td></tr><tr><td><b>2</b></td><td>4,50</td></tr><tr><td><b>1</b></td><td>4,40</td></tr><tr><td><b>0</b></td><td>abaixo</td></tr></tbody></table>
-      <p class="muted">Média de check-in e limpeza dos últimos 3 meses (Airbnb 60%, OTAs 40%), como hoje. Pontos = nota × peso ÷ 5.</p></div>
+      <p class="muted">A tabela vale para cada canal separado: nota do Airbnb e nota das outras OTAs (check-in e limpeza, últimos 3 meses). Depois, Airbnb pesa 60% e outras OTAs 40%, como hoje; com um canal só, ele vale 100%. Pontos = nota × peso ÷ 5.</p></div>
     <div class="opt"><h4>Avaliações por checkout</h4>
       <table><tbody><tr><td><b>5</b></td><td>70% ou mais</td></tr><tr><td><b>4</b></td><td>65%</td></tr><tr><td><b>3</b></td><td>60%</td></tr><tr><td><b>2</b></td><td>55%</td></tr><tr><td><b>1</b></td><td>50%</td></tr><tr><td><b>0</b></td><td>abaixo de 50% + ocorrência leve</td></tr></tbody></table>
       <p class="muted">Proposta: contar só os checkouts de Airbnb e Booking (ver item 7).</p></div>
@@ -225,14 +225,14 @@ a { color: var(--accent); }
   <div class="tbl"><table>
     <thead><tr><th>Bloco</th><th>Resultado</th><th class="num">Nota</th><th class="num">Pontos</th><th>Para subir</th></tr></thead>
     <tbody>
-      <tr><td>Notas</td><td>Airbnb 4,85 · OTAs 4,60 → média 4,75</td><td class="num">4</td><td class="num">36 de 45</td><td>4,80</td></tr>
+      <tr><td>Notas</td><td>Airbnb 4,85 (nota 5) · OTAs 4,60 (nota 3) → 5 × 60% + 3 × 40%</td><td class="num">4,2</td><td class="num">37,8 de 45</td><td>OTAs 4,70</td></tr>
       <tr><td>Avaliações por checkout</td><td>56%</td><td class="num">2</td><td class="num">8 de 20</td><td>60%</td></tr>
       <tr><td>Uso do sistema</td><td>pedido 65% (nota 2) · limpeza 82% (nota 4)</td><td class="num">3</td><td class="num">6 de 10</td><td>pedido 70%</td></tr>
       <tr><td>Manutenção</td><td>6 cards, média de 9 dias</td><td class="num">4</td><td class="num">16 de 20</td><td>média até 7 dias</td></tr>
       <tr><td>Cards</td><td>96%</td><td class="num">—</td><td class="num">9,6 de 10</td><td></td></tr>
       <tr><td>Bônus</td><td>1 indicação ganha</td><td></td><td class="num">+1</td><td></td></tr>
       <tr><td>Ocorrências</td><td>1 média</td><td></td><td class="num">−2</td><td></td></tr>
-      <tr class="grp"><td>Score</td><td></td><td></td><td class="num">74,6 · Regular</td><td></td></tr>
+      <tr class="grp"><td>Score</td><td></td><td></td><td class="num">76,4 · Regular</td><td></td></tr>
     </tbody>
   </table></div>
 </section>
@@ -244,7 +244,7 @@ a { color: var(--accent); }
     <thead><tr><th>Cenário</th><th class="num">Excelente</th><th class="num">Bom</th><th class="num">Regular</th><th class="num">Ruim</th><th class="num">Péssimo</th><th class="num">Mediana</th></tr></thead>
     <tbody>
       <tr><td>Hoje (publicado, máximo 125)</td><td class="num">74</td><td class="num">24</td><td class="num">3</td><td class="num">0</td><td class="num">0</td><td class="num">—</td></tr>
-      <tr><td><b>Máximo 115, notas em degraus (proposta)</b></td><td class="num"><b>0</b></td><td class="num"><b>20</b></td><td class="num"><b>32</b></td><td class="num"><b>30</b></td><td class="num"><b>19</b></td><td class="num"><b>66,0</b></td></tr>
+      <tr><td><b>Máximo 115, notas em degraus (proposta)</b></td><td class="num"><b>0</b></td><td class="num"><b>12</b></td><td class="num"><b>39</b></td><td class="num"><b>27</b></td><td class="num"><b>23</b></td><td class="num"><b>65,3</b></td></tr>
       <tr><td>Máximo 115, notas lineares (como hoje)</td><td class="num">0</td><td class="num">9</td><td class="num">34</td><td class="num">36</td><td class="num">22</td><td class="num">62,6</td></tr>
     </tbody>
   </table></div>
@@ -252,7 +252,7 @@ a { color: var(--accent); }
   <div class="tbl"><table>
     <thead><tr><th>Bloco</th><th class="num">Média da rede</th><th class="num">Máximo</th><th class="num">% do máximo</th></tr></thead>
     <tbody>
-      <tr><td>Notas dos hóspedes</td><td class="num">36,3</td><td class="num">45</td><td class="num">81%</td></tr>
+      <tr><td>Notas dos hóspedes</td><td class="num">35,6</td><td class="num">45</td><td class="num">79%</td></tr>
       <tr><td>Avaliações por checkout</td><td class="num">3,9</td><td class="num">20</td><td class="num">20%</td></tr>
       <tr><td>Uso do sistema</td><td class="num">0,4</td><td class="num">10</td><td class="num">4%</td></tr>
       <tr><td>Manutenção</td><td class="num">15,2</td><td class="num">20</td><td class="num">76%</td></tr>
@@ -265,7 +265,8 @@ a { color: var(--accent); }
     <li><b>A perda está nos dois blocos estratégicos.</b> Avaliações por checkout e uso do sistema somam 30 pontos e a rede faz menos de 5. Notas, manutenção e cards ficam perto de 80%.</li>
     <li><b>Se a rede não mudar até janeiro, serão 233 ocorrências novas por mês:</b> 49 franquias abaixo de 50% em avaliações por checkout, 90 no pedido de avaliação e 94 na limpeza completa. Hoje só 6 franquias completam a limpeza em mais da metade dos checkouts.</li>
     <li><b>Ninguém chega a Excelente em setembro.</b> A maior nota é 93,5. Com adoção dos dois blocos, os 30 pontos ficam ao alcance e o Excelente volta a ser possível.</li>
-    <li><b>Manutenção sem card concluído no mês vale 5 pela regra atual.</b> Em setembro, 26 das 72 franquias com nota 5 só tiveram 5 por isso. Se, nesses casos, a nota for recalculada sem a manutenção (os outros blocos convertidos para a escala cheia), a proposta fica com 0 / 17 / 31 / 30 / 23.</li>
+    <li><b>Manutenção sem card concluído no mês vale 5 pela regra atual.</b> Em setembro, 26 das 69 franquias com nota 5 só tiveram 5 por isso. Se, nesses casos, a nota for recalculada sem a manutenção (os outros blocos convertidos para a escala cheia), a proposta fica com 0 / 10 / 36 / 27 / 28.</li>
+    <li><b>Outras OTAs têm média mais baixa que o Airbnb.</b> Com a mesma tabela para os dois canais, 67 franquias tiram nota 5 no Airbnb e só 19 nas outras OTAs; 19 ficam com nota 0 ou 1 nas OTAs. Vale decidir se as OTAs têm uma tabela própria.</li>
   </ul>
   <p class="note"><b>Leitura:</b> a queda não vem de régua dura. Vem do que a rede ainda não faz e que é estratégico: avaliação por checkout e uso do Sapron. Até janeiro, o trabalho é de comunicação e treinamento para que esses dois blocos saiam do zero.</p>
 </section>
@@ -274,7 +275,7 @@ a { color: var(--accent); }
   <h2><span class="n">6</span>Para decidir juntos</h2>
   <ol class="decisions">
     <li><b>Pontuação máxima:</b> confirmar 115.</li>
-    <li><b>Notas:</b> degraus (proposta) ou linear como hoje.</li>
+    <li><b>Notas:</b> degraus por canal (proposta) ou linear como hoje; e se as outras OTAs usam a mesma tabela do Airbnb.</li>
     <li><b>Manutenção sem card concluído no mês:</b> vale 5, como hoje, ou não entra no cálculo. Se não entrar, a nota da franquia é recalculada sem a manutenção: os outros blocos somam no máximo 85 e o resultado é convertido para os 105 dos blocos. Exemplo: 68 de 85 viram 84 de 105, e depois entram bônus e ocorrências.</li>
     <li><b>Limpeza completa:</b> confirmar agente + checklist + 1 foto.</li>
     <li><b>Ocorrência por ficar abaixo de 50%:</b> leve (proposta).</li>
