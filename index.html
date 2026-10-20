@@ -1,0 +1,330 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<style>body{margin:0;font-size:14px}img{max-width:100%}[hidden]{display:none!important}</style>
+</head>
+<body>
+<title>Revisão do Score de Franquias</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,600;12..96,700&family=Public+Sans:ital,wght@0,400;0,600;0,700;1,400&family=IBM+Plex+Mono:wght@400;500&display=swap">
+<style>
+/* Layout: memorando de uma coluna (~760px), seções numeradas porque o documento é lido em ordem na reunião; tabelas roláveis. */
+:root {
+  --bg: #f7f8fb;
+  --surface: #ffffff;
+  --fg: #141a2b;
+  --muted: #5a6378;
+  --line: #dde2ec;
+  --accent: #1f4fd1;
+  --accent-soft: #e7edfc;
+  --keep: #17794a;  --keep-bg: #e3f4ea;
+  --out: #6b7385;   --out-bg: #eceef3;
+  --new: #1f4fd1;   --new-bg: #e7edfc;
+  --decide: #9a5b00; --decide-bg: #fdf0d9;
+  --risk: #b3261e;  --risk-bg: #fbe7e5;
+  --f-display: "Bricolage Grotesque", "Segoe UI", system-ui, sans-serif;
+  --f-body: "Public Sans", "Segoe UI", system-ui, sans-serif;
+  --f-mono: "IBM Plex Mono", ui-monospace, Consolas, monospace;
+}
+@media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) {
+  --bg: #0f1320; --surface: #171c2c; --fg: #e6e9f2; --muted: #9aa3b8; --line: #2a3147;
+  --accent: #7ea2ff; --accent-soft: #1d2847;
+  --keep: #6fd39f; --keep-bg: #15301f; --out: #a3aabb; --out-bg: #232a3c;
+  --new: #7ea2ff; --new-bg: #1d2847; --decide: #f2b453; --decide-bg: #36290f;
+  --risk: #ff8a80; --risk-bg: #3a1b19; color-scheme: dark; } }
+:root[data-theme="dark"] {
+  --bg: #0f1320; --surface: #171c2c; --fg: #e6e9f2; --muted: #9aa3b8; --line: #2a3147;
+  --accent: #7ea2ff; --accent-soft: #1d2847;
+  --keep: #6fd39f; --keep-bg: #15301f; --out: #a3aabb; --out-bg: #232a3c;
+  --new: #7ea2ff; --new-bg: #1d2847; --decide: #f2b453; --decide-bg: #36290f;
+  --risk: #ff8a80; --risk-bg: #3a1b19; color-scheme: dark; }
+
+body { background: var(--bg); color: var(--fg); font-family: var(--f-body); font-size: 15.5px; line-height: 1.6; }
+.wrap { max-width: 800px; margin: 0 auto; padding-block: 40px 72px;
+  padding-left: max(16px, env(safe-area-inset-left, 0px)); padding-right: max(16px, env(safe-area-inset-right, 0px));
+  display: flex; flex-direction: column; gap: 44px; }
+h1, h2, h3 { font-family: var(--f-display); text-wrap: balance; line-height: 1.2; margin: 0; }
+h1 { font-size: clamp(28px, 5vw, 38px); }
+h2 { font-size: 22px; display: flex; gap: 12px; align-items: baseline; }
+h2 .n { font-family: var(--f-mono); font-size: 14px; color: var(--accent); font-weight: 500; }
+h3 { font-size: 17px; }
+p { margin: 0; max-width: 68ch; }
+section { display: flex; flex-direction: column; gap: 14px; }
+ul, ol { margin: 0; padding-left: 20px; display: flex; flex-direction: column; gap: 6px; max-width: 70ch; }
+.eyebrow { font-family: var(--f-mono); font-size: 12px; letter-spacing: .08em; text-transform: uppercase; color: var(--muted); }
+.meta { display: flex; flex-wrap: wrap; gap: 6px 18px; color: var(--muted); font-size: 14px; }
+.meta b { color: var(--fg); font-weight: 600; }
+header { display: flex; flex-direction: column; gap: 12px; }
+.draft { align-self: flex-start; background: var(--decide-bg); color: var(--decide); font-weight: 700; font-size: 12px; padding: 3px 10px; border-radius: 999px; letter-spacing: .04em; }
+
+.summary { background: var(--surface); border: 1px solid var(--line); border-radius: 10px; padding: 20px 22px; display: grid; grid-template-columns: repeat(auto-fit, minmax(160px, 1fr)); gap: 18px; }
+.stat { display: flex; flex-direction: column; gap: 2px; }
+.stat .v { font-family: var(--f-display); font-size: 30px; font-weight: 700; font-variant-numeric: tabular-nums; }
+.stat .l { font-size: 13px; color: var(--muted); line-height: 1.4; }
+
+.tbl { overflow-x: auto; border: 1px solid var(--line); border-radius: 10px; background: var(--surface); }
+table { border-collapse: collapse; width: 100%; font-size: 14px; }
+th, td { text-align: left; padding: 9px 12px; border-bottom: 1px solid var(--line); vertical-align: top; }
+th { font-size: 12px; text-transform: uppercase; letter-spacing: .05em; color: var(--muted); font-weight: 600; background: var(--bg); }
+tr:last-child td { border-bottom: 0; }
+td.num, th.num { text-align: right; font-variant-numeric: tabular-nums; white-space: nowrap; }
+tr.grp td { background: var(--bg); font-weight: 700; font-size: 13px; color: var(--muted); }
+tr.out td:first-child { color: var(--muted); text-decoration: line-through; text-decoration-color: var(--line); }
+
+.pill { display: inline-block; font-size: 12px; font-weight: 700; padding: 2px 9px; border-radius: 999px; white-space: nowrap; }
+.keep { background: var(--keep-bg); color: var(--keep); }
+.out { background: var(--out-bg); color: var(--out); }
+.new { background: var(--new-bg); color: var(--new); }
+.decide { background: var(--decide-bg); color: var(--decide); }
+.who { font-size: 12px; color: var(--muted); display: block; }
+
+.note { border-left: 3px solid var(--accent); background: var(--accent-soft); padding: 12px 16px; border-radius: 0 8px 8px 0; font-size: 14.5px; }
+.note.risk { border-color: var(--risk); background: var(--risk-bg); }
+
+.options { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 12px; }
+.opt { background: var(--surface); border: 1px solid var(--line); border-radius: 10px; padding: 16px; display: flex; flex-direction: column; gap: 8px; min-width: 0; }
+.opt h4 { margin: 0; font-family: var(--f-display); font-size: 15px; }
+.opt .tag { font-family: var(--f-mono); font-size: 12px; color: var(--accent); }
+.opt ul { font-size: 14px; gap: 4px; }
+.opt .lbl { font-size: 12px; font-weight: 700; color: var(--muted); text-transform: uppercase; letter-spacing: .05em; }
+.rec { font-size: 14px; }
+.rec b { color: var(--accent); }
+
+.decisions { counter-reset: d; list-style: none; padding: 0; gap: 10px; max-width: none; }
+.decisions li { counter-increment: d; background: var(--surface); border: 1px solid var(--line); border-radius: 10px; padding: 12px 16px 12px 52px; position: relative; }
+.decisions li::before { content: counter(d); position: absolute; left: 16px; top: 12px; font-family: var(--f-mono); font-weight: 500; color: var(--decide); background: var(--decide-bg); width: 24px; height: 24px; border-radius: 50%; display: grid; place-items: center; font-size: 13px; }
+code { font-family: var(--f-mono); font-size: 0.86em; background: var(--out-bg); padding: 1px 5px; border-radius: 4px; }
+footer { font-size: 13px; color: var(--muted); border-top: 1px solid var(--line); padding-top: 16px; display: flex; flex-direction: column; gap: 6px; }
+a { color: var(--accent); }
+</style>
+
+<style>
+.pill.chg { background: var(--decide-bg); color: var(--decide); }
+.regras { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 12px; }
+.regras .opt table { font-size: 13px; }
+.regras .opt td { padding: 4px 8px; }
+</style>
+<div class="wrap">
+
+<header>
+  <span class="draft">v1 · PROPOSTA APÓS A DAILY DE 20/10</span>
+  <span class="eyebrow">Backoffice de Franquias · Score de Franquias</span>
+  <h1>Revisão do Score de Franquias</h1>
+  <p>Proposta de quais critérios ficam, quais saem e quais entram, com a nova pontuação e a simulação sobre setembro. O escopo é <b>só o cálculo e os parâmetros</b>. A regra nova valeria a partir de <b>1º de janeiro de 2027</b>, com comunicação antes à rede.</p>
+  <div class="meta"><span>Autor <b>David Barbosa Soares</b></span><span>Para <b>Rayanne Oliveira</b></span><span>Data <b>20/10/2026</b></span><span>Base <b>score de set/2026 e Sapron</b></span></div>
+</header>
+
+<div class="summary">
+  <div class="stat"><span class="v">125 → 115</span><span class="l">pontuação máxima proposta, com o bônus</span></div>
+  <div class="stat"><span class="v">8 → 0</span><span class="l">critérios digitados à mão ou dependentes de consultor</span></div>
+  <div class="stat"><span class="v">5</span><span class="l">blocos: notas, avaliações, uso do sistema, manutenção e cards</span></div>
+  <div class="stat"><span class="v">01/01/27</span><span class="l">início da regra nova, depois de comunicar a rede</span></div>
+</div>
+
+<section>
+  <h2><span class="n">1</span>A régua usada</h2>
+  <ol>
+    <li><b>Só o que é estratégico para a rede entra no score.</b> O resto vira ocorrência quando a franquia não cumpre.</li>
+    <li><b>Ocorrência pega falta de alinhamento.</b> O que já gera ocorrência sai do score, para não cobrar duas vezes.</li>
+    <li><b>Nada subjetivo.</b> Todo critério sai de um sistema, sem nota de consultor.</li>
+    <li><b>O franqueado entende a própria nota sozinho.</b> Cada bloco tem uma tabela simples e diz o que falta para subir.</li>
+  </ol>
+</section>
+
+<section>
+  <h2><span class="n">2</span>Inconformidades do score atual</h2>
+  <div class="tbl"><table>
+    <thead><tr><th>Problema</th><th>Efeito</th></tr></thead>
+    <tbody>
+      <tr><td>A escala vai até <b>125</b></td><td>Só os blocos somam 115 e o bônus pode somar mais 10. Em setembro, 74 de 101 franquias eram "Excelente", enquanto a rede sofre com nota</td></tr>
+      <tr><td>Critério sem dado é ignorado pela média</td><td>A franquia sem avaliação no critério acaba com nota máxima</td></tr>
+      <tr><td>Implantação lançada como "SLA" e também como penalidade</td><td>A mesma ocorrência é cobrada duas vezes</td></tr>
+      <tr><td>Oito critérios digitados à mão e cruzados pelo <b>nome</b> da franquia</td><td>Um erro de grafia zera a nota; o resultado depende de quem preencheu</td></tr>
+      <tr><td>Manutenção vale cerca de 1,7 ponto</td><td>É 1 de 9 critérios do bloco de aderência (15 pontos), embora seja o principal problema de nota da rede</td></tr>
+    </tbody>
+  </table></div>
+</section>
+
+<section>
+  <h2><span class="n">3</span>Critério a critério</h2>
+  <p><span class="pill keep">Fica</span> <span class="pill chg">Muda</span> <span class="pill new">Novo</span> <span class="pill out">Sai</span></p>
+  <div class="tbl"><table>
+    <thead><tr><th>Critério</th><th>Hoje</th><th>Proposta</th><th>O que muda</th></tr></thead>
+    <tbody>
+      <tr class="grp"><td colspan="4">Ficam ou mudam</td></tr>
+      <tr><td>Notas dos hóspedes (check-in e limpeza, 3 meses, Airbnb 60% e OTAs 40%)</td><td>50 pontos, linear</td><td><span class="pill chg">Muda</span></td><td>Degraus de 0 a 5; nota 5 só com média de 4,80 ou mais</td></tr>
+      <tr><td>Avaliações por checkout</td><td>15 pontos, linear</td><td><span class="pill chg">Muda</span></td><td>20 pontos; abaixo de 50% zera e gera ocorrência; degraus até 70%</td></tr>
+      <tr><td>Resolução de manutenções</td><td>~1,7 ponto</td><td><span class="pill chg">Muda</span></td><td>20 pontos, mesma regra de hoje, sem os cards do proprietário</td></tr>
+      <tr><td>Cards de check-in e checkout</td><td>~1,7 ponto</td><td><span class="pill chg">Muda</span></td><td>10 pontos, mesma regra de hoje</td></tr>
+      <tr><td>Pedido de avaliação</td><td>não existe</td><td><span class="pill new">Novo</span></td><td>Uso do sistema; abaixo de 50% zera e gera ocorrência</td></tr>
+      <tr><td>Limpeza completa (agente + checklist + 1 foto)</td><td>não existe</td><td><span class="pill new">Novo</span></td><td>Uso do sistema; abaixo de 50% zera e gera ocorrência</td></tr>
+      <tr><td>Bônus Airbnb</td><td>+5 acima de 4,8</td><td><span class="pill chg">Muda</span></td><td>+5 só a partir de 4,90</td></tr>
+      <tr><td>Indicações e vendas de spot (bônus)</td><td>até 5 cada</td><td><span class="pill keep">Fica</span></td><td>Bônus total limitado a 10</td></tr>
+      <tr><td>Penalidades (ocorrências)</td><td>app de Qualidade</td><td><span class="pill keep">Fica</span></td><td>Mais ocorrência leve por critério abaixo de 50%</td></tr>
+
+      <tr class="grp"><td colspan="4">Saem: já viram ocorrência</td></tr>
+      <tr class="out"><td>Despesas com erro</td><td>automático</td><td><span class="pill out">Sai</span></td><td>Já gera ocorrência</td></tr>
+      <tr class="out"><td>Danos fora do prazo</td><td>automático</td><td><span class="pill out">Sai</span></td><td>Já gera ocorrência</td></tr>
+      <tr class="out"><td>Padronização, adequação, cancelamento de vistoria, taxa de limpeza</td><td>bases paradas</td><td><span class="pill out">Sai</span></td><td>Já entram nas ocorrências</td></tr>
+      <tr class="out"><td>Número de realocações</td><td>manual</td><td><span class="pill out">Sai</span></td><td>Realocação já abre ocorrência</td></tr>
+      <tr class="out"><td>Tempo de resposta (SLA), usado para Implantação</td><td>5 − ocorrências</td><td><span class="pill out">Sai</span></td><td>É a mesma ocorrência contada de novo</td></tr>
+      <tr class="out"><td>Presença nos treinamentos</td><td>manual</td><td><span class="pill out">Sai</span></td><td>A falta já vira ocorrência (subcategoria 10.1)</td></tr>
+
+      <tr class="grp"><td colspan="4">Saem: subjetivos</td></tr>
+      <tr class="out"><td>Comunicação assertiva no suporte</td><td>manual</td><td><span class="pill out">Sai</span></td><td>O card do suporte já gera ocorrência</td></tr>
+      <tr class="out"><td>Plano de ações, controle financeiro, inventário, estoque</td><td>consultor</td><td><span class="pill out">Sai</span></td><td>Não ter o mínimo vira ocorrência</td></tr>
+      <tr class="out"><td>Engajamento com a marca (bônus)</td><td>consultor</td><td><span class="pill out">Sai</span></td><td>Subjetivo</td></tr>
+      <tr class="out"><td>Módulo de despesa</td><td>não existe</td><td><span class="pill out">Fora</span></td><td>Avaliado e descartado</td></tr>
+    </tbody>
+  </table></div>
+</section>
+
+<section>
+  <h2><span class="n">4</span>Nova pontuação (proposta: máximo 115)</h2>
+  <div class="tbl"><table>
+    <thead><tr><th>Bloco</th><th class="num">Hoje (125)</th><th class="num">Proposta (115)</th></tr></thead>
+    <tbody>
+      <tr><td>Notas dos hóspedes</td><td class="num">50</td><td class="num"><b>45</b></td></tr>
+      <tr><td>Avaliações por checkout</td><td class="num">15</td><td class="num"><b>20</b></td></tr>
+      <tr><td>Uso do sistema</td><td class="num">—</td><td class="num"><b>10</b></td></tr>
+      <tr><td>Manutenção</td><td class="num">~1,7</td><td class="num"><b>20</b></td></tr>
+      <tr><td>Cards de check-in e checkout</td><td class="num">~1,7</td><td class="num"><b>10</b></td></tr>
+      <tr><td>Comunicação, operação local e demais da aderência</td><td class="num">~46</td><td class="num">—</td></tr>
+      <tr><td>Bônus (teto)</td><td class="num">10</td><td class="num"><b>10</b></td></tr>
+      <tr class="grp"><td>Máximo</td><td class="num">125</td><td class="num">115</td></tr>
+    </tbody>
+  </table></div>
+  <p>As faixas continuam as de hoje: <b>Excelente a partir de 95</b>, Bom 80, Regular 65, Ruim 50, Péssimo abaixo de 50. Com o máximo em 115, a distância até o Excelente cai de 30 para 20 pontos.</p>
+
+  <h3>Como cada bloco vira pontos</h3>
+  <div class="regras">
+    <div class="opt"><h4>Notas dos hóspedes</h4>
+      <table><tbody><tr><td><b>5</b></td><td>4,80 ou mais</td></tr><tr><td><b>4</b></td><td>4,70</td></tr><tr><td><b>3</b></td><td>4,60</td></tr><tr><td><b>2</b></td><td>4,50</td></tr><tr><td><b>1</b></td><td>4,40</td></tr><tr><td><b>0</b></td><td>abaixo</td></tr></tbody></table>
+      <p class="muted">Média de check-in e limpeza dos últimos 3 meses (Airbnb 60%, OTAs 40%), como hoje. Pontos = nota × peso ÷ 5.</p></div>
+    <div class="opt"><h4>Avaliações por checkout</h4>
+      <table><tbody><tr><td><b>5</b></td><td>70% ou mais</td></tr><tr><td><b>4</b></td><td>65%</td></tr><tr><td><b>3</b></td><td>60%</td></tr><tr><td><b>2</b></td><td>55%</td></tr><tr><td><b>1</b></td><td>50%</td></tr><tr><td><b>0</b></td><td>abaixo de 50% + ocorrência leve</td></tr></tbody></table></div>
+    <div class="opt"><h4>Uso do sistema</h4>
+      <table><tbody><tr><td><b>5</b></td><td>90% ou mais</td></tr><tr><td><b>4</b></td><td>80%</td></tr><tr><td><b>3</b></td><td>70%</td></tr><tr><td><b>2</b></td><td>60%</td></tr><tr><td><b>1</b></td><td>50%</td></tr><tr><td><b>0</b></td><td>abaixo de 50% + ocorrência leve</td></tr></tbody></table>
+      <p class="muted">Média de duas notas: <b>pedido de avaliação</b> (% das reservas Airbnb do mês) e <b>limpeza completa</b> (% das limpezas do mês com agente atribuído, checklist preenchido e pelo menos 1 foto).</p></div>
+    <div class="opt"><h4>Manutenção</h4>
+      <table><tbody><tr><td><b>5</b></td><td>média até 7 dias</td></tr><tr><td><b>4</b></td><td>até 14</td></tr><tr><td><b>3</b></td><td>até 21</td></tr><tr><td><b>2</b></td><td>até 28</td></tr><tr><td><b>1</b></td><td>até 35</td></tr><tr><td><b>0</b></td><td>acima de 35, ou qualquer card aberto há mais de 35 dias</td></tr></tbody></table>
+      <p class="muted">Regra de hoje: dias do envio à franquia (mais 7 de carência se não urgente) até a evidência, nos cards concluídos no mês. Cards de responsabilidade do proprietário não contam.</p></div>
+  </div>
+  <ul>
+    <li><b>Cards de check-in e checkout:</b> como hoje, % fechado no mês × 10.</li>
+    <li><b>Bônus:</b> indicações e vendas de spot como hoje (+1 por indicação, indicação ganha ou venda, até 5 em cada), mais <b>+5 com Airbnb de 4,90 ou mais</b>. O total não passa de 10.</li>
+    <li><b>Ocorrências:</b> as do mês, como hoje, mais <b>1 ponto (leve) por critério abaixo de 50%</b>: avaliações por checkout, pedido de avaliação e limpeza completa.</li>
+  </ul>
+
+  <h3>Exemplo de boletim (máximo 115)</h3>
+  <div class="tbl"><table>
+    <thead><tr><th>Bloco</th><th>Resultado</th><th class="num">Nota</th><th class="num">Pontos</th><th>Para subir</th></tr></thead>
+    <tbody>
+      <tr><td>Notas</td><td>Airbnb 4,85 · OTAs 4,60 → média 4,75</td><td class="num">4</td><td class="num">36 de 45</td><td>4,80</td></tr>
+      <tr><td>Avaliações por checkout</td><td>56%</td><td class="num">2</td><td class="num">8 de 20</td><td>60%</td></tr>
+      <tr><td>Uso do sistema</td><td>pedido 65% (nota 2) · limpeza 82% (nota 4)</td><td class="num">3</td><td class="num">6 de 10</td><td>pedido 70%</td></tr>
+      <tr><td>Manutenção</td><td>6 cards, média de 9 dias</td><td class="num">4</td><td class="num">16 de 20</td><td>média até 7 dias</td></tr>
+      <tr><td>Cards</td><td>96%</td><td class="num">—</td><td class="num">9,6 de 10</td><td></td></tr>
+      <tr><td>Bônus</td><td>1 indicação ganha</td><td></td><td class="num">+1</td><td></td></tr>
+      <tr><td>Ocorrências</td><td>1 média</td><td></td><td class="num">−2</td><td></td></tr>
+      <tr class="grp"><td>Score</td><td></td><td></td><td class="num">74,6 · Regular</td><td></td></tr>
+    </tbody>
+  </table></div>
+</section>
+
+<section>
+  <h2><span class="n">5</span>Simulação sobre setembro/26</h2>
+  <p>A regra aplicada às <b>101 franquias</b> do score de setembro que não estão em Integração. O boletim de cada uma, com botões para trocar a escala e as opções, está na <a href="simulacao.html">página da simulação</a>.</p>
+  <div class="tbl"><table>
+    <thead><tr><th>Cenário</th><th class="num">Excelente</th><th class="num">Bom</th><th class="num">Regular</th><th class="num">Ruim</th><th class="num">Péssimo</th><th class="num">Mediana</th></tr></thead>
+    <tbody>
+      <tr><td>Hoje (publicado, máximo 125)</td><td class="num">74</td><td class="num">24</td><td class="num">3</td><td class="num">0</td><td class="num">0</td><td class="num">—</td></tr>
+      <tr><td><b>Máximo 115, notas em degraus (proposta)</b></td><td class="num"><b>0</b></td><td class="num"><b>20</b></td><td class="num"><b>32</b></td><td class="num"><b>30</b></td><td class="num"><b>19</b></td><td class="num"><b>66,0</b></td></tr>
+      <tr><td>Máximo 115, notas lineares (como hoje)</td><td class="num">0</td><td class="num">9</td><td class="num">35</td><td class="num">38</td><td class="num">19</td><td class="num">62,6</td></tr>
+    </tbody>
+  </table></div>
+  <h3>De onde vem a queda (proposta de 115)</h3>
+  <div class="tbl"><table>
+    <thead><tr><th>Bloco</th><th class="num">Média da rede</th><th class="num">Máximo</th><th class="num">% do máximo</th></tr></thead>
+    <tbody>
+      <tr><td>Notas dos hóspedes</td><td class="num">36,3</td><td class="num">45</td><td class="num">81%</td></tr>
+      <tr><td>Avaliações por checkout</td><td class="num">3,9</td><td class="num">20</td><td class="num">20%</td></tr>
+      <tr><td>Uso do sistema</td><td class="num">0,4</td><td class="num">10</td><td class="num">4%</td></tr>
+      <tr><td>Manutenção</td><td class="num">15,6</td><td class="num">20</td><td class="num">78%</td></tr>
+      <tr><td>Cards</td><td class="num">8,9</td><td class="num">10</td><td class="num">89%</td></tr>
+      <tr><td>Bônus</td><td class="num">+3,0</td><td class="num">10</td><td class="num"></td></tr>
+      <tr><td>Ocorrências</td><td class="num">−4,1</td><td class="num"></td><td class="num"></td></tr>
+    </tbody>
+  </table></div>
+  <ul>
+    <li><b>A perda está nos dois blocos estratégicos.</b> Avaliações por checkout e uso do sistema somam 30 pontos e a rede faz menos de 5. Notas, manutenção e cards ficam perto de 80%.</li>
+    <li><b>Se a rede não mudar até janeiro, serão 233 ocorrências novas por mês:</b> 49 franquias abaixo de 50% em avaliações por checkout, 90 no pedido de avaliação e 94 na limpeza completa. Hoje só 6 franquias completam a limpeza em mais da metade dos checkouts.</li>
+    <li><b>Ninguém chega a Excelente em setembro.</b> A maior nota é 93,5. Com adoção dos dois blocos, os 30 pontos ficam ao alcance e o Excelente volta a ser possível.</li>
+    <li><b>Manutenção sem card concluído no mês vale 5 pela regra atual.</b> Em setembro, 26 das 72 franquias com nota 5 só tiveram 5 por isso. Se o bloco não entrar nesses casos, a proposta fica com 0 / 17 / 31 / 30 / 23.</li>
+  </ul>
+  <p class="note"><b>Leitura:</b> a queda não vem de régua dura. Vem do que a rede ainda não faz e que é estratégico: avaliação por checkout e uso do Sapron. Até janeiro, o trabalho é de comunicação e treinamento para que esses dois blocos saiam do zero.</p>
+</section>
+
+<section>
+  <h2><span class="n">6</span>Para decidir juntos</h2>
+  <ol class="decisions">
+    <li><b>Pontuação máxima:</b> confirmar 115.</li>
+    <li><b>Notas:</b> degraus (proposta) ou linear como hoje.</li>
+    <li><b>Manutenção sem card concluído no mês:</b> vale 5, como hoje, ou não entra no cálculo.</li>
+    <li><b>Limpeza completa:</b> confirmar agente + checklist + 1 foto.</li>
+    <li><b>Ocorrência por ficar abaixo de 50%:</b> leve (proposta).</li>
+    <li><b>Comunicação e treinamento até janeiro:</b> quando avisar a rede e quem treina o pedido de avaliação e o módulo de limpeza.</li>
+  </ol>
+</section>
+
+<section>
+  <h2><span class="n">7</span>Riscos e pontos de atenção</h2>
+  <div class="note risk"><b>A ocorrência vira o motor do score.</b> O app de ocorrências tem erros de cadastro: franquia lançada com código de imóvel, o mesmo link de chamado em casos diferentes, correções depois do fechamento. Com mais peso nas ocorrências, esse processo precisa estar firme antes de janeiro.</div>
+  <ul>
+    <li><b>Consultoria:</b> a ferramenta da consultoria regional acabou de ganhar a aba "Notas do Score". Avisar a consultoria e o time de tecnologia que as notas deixam de entrar no score.</li>
+    <li><b>Quem usa o score para outra coisa:</b> há proposta de usar o score como meta de bonificação no Vistas. Mudar os critérios muda essa meta.</li>
+    <li><b>Avaliações por checkout dependem do canal:</b> Airbnb 54%, Booking 34%, direto 21%, Expedia 18%. O corte de 50% pesa mais para quem vende fora do Airbnb.</li>
+    <li><b>Indicações fora da curva</b> (set/26: 70 indicações numa franquia) precisam de validação antes de virar bônus.</li>
+    <li><b>Vigência:</b> a regra vale a partir de janeiro, sem recalcular meses já publicados.</li>
+  </ul>
+</section>
+
+<section>
+  <h2><span class="n">8</span>Em observação</h2>
+  <div class="tbl"><table>
+    <thead><tr><th>Funcionalidade</th><th>Situação</th></tr></thead>
+    <tbody>
+      <tr><td>Mensagens da estadia (2 dias antes, check-in, meio da estadia, véspera e dia do checkout)</td><td>No ar desde 14/09. Adoção de 1,6% em set e 3,7% em out. Reavaliar depois do treinamento</td></tr>
+      <tr><td>Score de manutenção do Sapron</td><td>Ainda instável. Serve para separar as franquias que precisam de acompanhamento de manutenção, não para o score</td></tr>
+      <tr><td>Preventivas com evidência e evidência validada por IA</td><td>Começaram em set e out. Reavaliar com 2 a 3 meses de histórico</td></tr>
+    </tbody>
+  </table></div>
+</section>
+
+<section>
+  <h2><span class="n">9</span>Limitações para pedir à Tech</h2>
+  <div class="tbl"><table>
+    <thead><tr><th>Limitação</th><th>Impacto no score</th></tr></thead>
+    <tbody>
+      <tr><td>O card de manutenção não guarda <b>quando</b> passou para o proprietário, só marca o card inteiro</td><td>Não dá para descontar só os dias com o proprietário; o card inteiro sai da conta</td></tr>
+      <tr><td>O Sapron não guarda <b>quando</b> a agente de limpeza foi atribuída, só se foi atribuída</td><td>Não dá para saber se foi antes ou depois da limpeza. Para medir uso no dia a dia, isso basta</td></tr>
+      <tr><td>A foto do checklist não tem data, hora nem checagem de foto reaproveitada</td><td>A mesma foto pode servir para várias limpezas. A manutenção já tem essa checagem e daria para estender</td></tr>
+      <tr><td>Checklist marcado como "ok" em 98% das limpezas</td><td>Indica preenchimento automático; por isso a foto é exigida</td></tr>
+      <tr><td>As mensagens da estadia não guardam data nem quem enviou</td><td>Dá para saber se a mensagem foi enviada, mas não quando nem por quem</td></tr>
+    </tbody>
+  </table></div>
+</section>
+
+<footer>
+  <span>Fontes: planilha "Avaliações - Score Franquias 2025" e "prévia lua" (fechamento de set/26); banco do Sapron consultado em 19 e 20/10/2026 (reservas concluídas sem bloqueio; cards de manutenção pela regra do fechamento).</span>
+  <span>v1, depois da daily de 20/10. Ainda não revisado pela Rayanne.</span>
+</footer>
+
+</div>
+
+</body>
+</html>

@@ -1,0 +1,460 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<style>body{margin:0;font-size:14px}img{max-width:100%}[hidden]{display:none!important}</style>
+</head>
+<body>
+<title>Simulação do Score de Setembro</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,600;12..96,700&family=Public+Sans:wght@400;600;700&family=IBM+Plex+Mono:wght@400;500&display=swap">
+<style>
+/* Layout: a regra numa tela (tabela de notas), cenários lado a lado, depois o boletim de cada franquia. */
+:root {
+  --bg: #f7f8fb; --surface: #ffffff; --fg: #141a2b; --muted: #5a6378; --line: #dde2ec;
+  --accent: #1f4fd1; --accent-soft: #e7edfc;
+  --exc: #17794a; --exc-bg: #dff3e7;
+  --bom: #3f7fd6; --bom-bg: #e3edfb;
+  --reg: #9a6a00; --reg-bg: #fbf0d6;
+  --ruim: #c2561c; --ruim-bg: #fbe6da;
+  --crit: #b3261e; --crit-bg: #fadfdc;
+  --f-display: "Bricolage Grotesque", "Segoe UI", system-ui, sans-serif;
+  --f-body: "Public Sans", "Segoe UI", system-ui, sans-serif;
+  --f-mono: "IBM Plex Mono", ui-monospace, Consolas, monospace;
+}
+@media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) {
+  --bg: #0f1320; --surface: #171c2c; --fg: #e6e9f2; --muted: #9aa3b8; --line: #2a3147;
+  --accent: #7ea2ff; --accent-soft: #1d2847;
+  --exc: #6fd39f; --exc-bg: #15301f; --bom: #8db4ff; --bom-bg: #1b2a49;
+  --reg: #f2c062; --reg-bg: #36290f; --ruim: #ff9d6b; --ruim-bg: #3a2114;
+  --crit: #ff8a80; --crit-bg: #3a1b19; color-scheme: dark; } }
+:root[data-theme="dark"] {
+  --bg: #0f1320; --surface: #171c2c; --fg: #e6e9f2; --muted: #9aa3b8; --line: #2a3147;
+  --accent: #7ea2ff; --accent-soft: #1d2847;
+  --exc: #6fd39f; --exc-bg: #15301f; --bom: #8db4ff; --bom-bg: #1b2a49;
+  --reg: #f2c062; --reg-bg: #36290f; --ruim: #ff9d6b; --ruim-bg: #3a2114;
+  --crit: #ff8a80; --crit-bg: #3a1b19; color-scheme: dark; }
+
+body { background: var(--bg); color: var(--fg); font-family: var(--f-body); font-size: 15px; line-height: 1.55; }
+.wrap { max-width: 1120px; margin: 0 auto; padding-block: 36px 64px;
+  padding-left: max(16px, env(safe-area-inset-left, 0px)); padding-right: max(16px, env(safe-area-inset-right, 0px));
+  display: flex; flex-direction: column; gap: 36px; }
+h1, h2, h3, h4 { font-family: var(--f-display); margin: 0; text-wrap: balance; line-height: 1.2; }
+h1 { font-size: clamp(26px, 4.5vw, 36px); }
+h2 { font-size: 21px; }
+h3 { font-size: 16px; }
+p { margin: 0; max-width: 75ch; }
+section { display: flex; flex-direction: column; gap: 14px; }
+.eyebrow { font-family: var(--f-mono); font-size: 12px; letter-spacing: .08em; text-transform: uppercase; color: var(--muted); }
+header { display: flex; flex-direction: column; gap: 10px; }
+.muted { color: var(--muted); font-size: 14px; }
+.num { text-align: right; font-variant-numeric: tabular-nums; }
+
+.tbl { overflow-x: auto; border: 1px solid var(--line); border-radius: 10px; background: var(--surface); }
+table { border-collapse: collapse; width: 100%; font-size: 13.5px; }
+th, td { padding: 8px 10px; border-bottom: 1px solid var(--line); text-align: left; vertical-align: middle; white-space: nowrap; }
+th { font-size: 11.5px; text-transform: uppercase; letter-spacing: .05em; color: var(--muted); font-weight: 600; background: var(--bg); }
+tr:last-child td { border-bottom: 0; }
+td.sc, th.sc { border-left: 1px solid var(--line); }
+
+.regra { display: grid; grid-template-columns: minmax(0, 1.6fr) minmax(0, 1fr); gap: 16px; align-items: start; }
+@media (max-width: 860px) { .regra { grid-template-columns: 1fr; } }
+.regra .tbl td:first-child { font-weight: 700; }
+.steps { background: var(--surface); border: 1px solid var(--line); border-radius: 10px; padding: 16px; display: flex; flex-direction: column; gap: 10px; font-size: 14px; }
+.steps ol { margin: 0; padding-left: 20px; display: flex; flex-direction: column; gap: 6px; }
+.steps code { font-family: var(--f-mono); font-size: 13px; background: var(--accent-soft); padding: 1px 6px; border-radius: 4px; }
+
+.scen { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 12px; }
+@media (max-width: 760px) { .scen { grid-template-columns: 1fr; } }
+.card { background: var(--surface); border: 1px solid var(--line); border-radius: 10px; padding: 16px; display: flex; flex-direction: column; gap: 12px; min-width: 0; }
+.card.hoje { background: var(--bg); border-style: dashed; }
+.card .rule { font-size: 13px; color: var(--muted); }
+.bar { display: flex; height: 14px; border-radius: 4px; overflow: hidden; background: var(--line); }
+.bar span { display: block; height: 100%; }
+.counts { display: flex; flex-direction: column; gap: 4px; font-size: 14px; }
+.counts div { display: flex; justify-content: space-between; gap: 8px; }
+.counts b { font-variant-numeric: tabular-nums; }
+.dot { width: 10px; height: 10px; border-radius: 2px; display: inline-block; margin-right: 6px; vertical-align: middle; }
+.kpi { display: flex; justify-content: space-between; border-top: 1px solid var(--line); padding-top: 10px; font-size: 13px; color: var(--muted); }
+.kpi b { color: var(--fg); font-size: 15px; font-variant-numeric: tabular-nums; }
+
+.pill { display: inline-block; font-size: 11.5px; font-weight: 700; padding: 1px 8px; border-radius: 999px; }
+.f-Excelente { background: var(--exc-bg); color: var(--exc); }
+.f-Bom { background: var(--bom-bg); color: var(--bom); }
+.f-Regular { background: var(--reg-bg); color: var(--reg); }
+.f-Ruim { background: var(--ruim-bg); color: var(--ruim); }
+.f-Crítico, .f-Péssimo { background: var(--crit-bg); color: var(--crit); }
+.nota { display: inline-grid; place-items: center; width: 26px; height: 26px; border-radius: 6px; font-weight: 700; font-variant-numeric: tabular-nums; font-size: 13.5px; }
+.n5, .n4 { background: var(--exc-bg); color: var(--exc); }
+.n3 { background: var(--reg-bg); color: var(--reg); }
+.n2, .n1 { background: var(--ruim-bg); color: var(--ruim); }
+.n0 { background: var(--crit-bg); color: var(--crit); }
+.nx { background: var(--line); color: var(--muted); }
+.cell { display: flex; align-items: center; gap: 6px; justify-content: flex-end; }
+.cell .s { font-variant-numeric: tabular-nums; min-width: 2.6em; text-align: right; }
+.delta { font-size: 11.5px; font-weight: 700; color: var(--crit); font-family: var(--f-mono); }
+.delta.up { color: var(--exc); }
+
+.dist { display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); gap: 10px; }
+@media (max-width: 760px) { .dist { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+.dist div { background: var(--surface); border: 1px solid var(--line); border-radius: 8px; padding: 10px 12px; display: flex; flex-direction: column; gap: 6px; font-size: 13px; }
+.dist .row { display: flex; gap: 3px; align-items: flex-end; height: 44px; }
+.dist .row span { flex: 1; background: var(--accent); border-radius: 2px 2px 0 0; min-height: 2px; opacity: .85; }
+.dist .lbl { display: flex; gap: 3px; font-family: var(--f-mono); font-size: 11px; color: var(--muted); }
+.dist .lbl span { flex: 1; text-align: center; }
+
+.controls { display: flex; flex-wrap: wrap; gap: 10px; align-items: center; }
+.controls input, .controls select { font: inherit; font-size: 14px; padding: 7px 10px; border: 1px solid var(--line); border-radius: 8px; background: var(--surface); color: var(--fg); }
+.controls input { flex: 1 1 220px; min-width: 0; }
+:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+tr.row { cursor: pointer; }
+tr.row:hover td, tr.row.open td { background: var(--accent-soft); }
+td.name { white-space: normal; min-width: 190px; font-weight: 600; }
+td.name small { display: block; font-weight: 400; color: var(--muted); font-size: 12px; }
+.toggle { font: inherit; font-size: 12px; font-weight: 600; color: var(--accent); background: none; border: 0; padding: 0; cursor: pointer; }
+tr.det td { white-space: normal; background: var(--bg); padding: 16px; }
+.boletim { display: grid; grid-template-columns: minmax(0, 1fr) 260px; gap: 16px; }
+@media (max-width: 860px) { .boletim { grid-template-columns: 1fr; } }
+.boletim table { background: var(--surface); font-size: 13.5px; }
+.boletim td { white-space: normal; }
+.boletim td.prox { color: var(--muted); }
+.res { background: var(--surface); border: 1px solid var(--line); border-radius: 8px; padding: 14px; display: flex; flex-direction: column; gap: 6px; font-size: 13.5px; }
+.res .ln { display: flex; justify-content: space-between; gap: 8px; font-variant-numeric: tabular-nums; }
+.res .tot { border-top: 1px solid var(--line); padding-top: 8px; font-weight: 700; font-size: 15px; }
+.res .why { color: var(--muted); font-size: 12.5px; }
+.notes { font-size: 13px; color: var(--muted); display: flex; flex-direction: column; gap: 4px; border-top: 1px solid var(--line); padding-top: 14px; }
+.notes ul { margin: 0; padding-left: 18px; display: flex; flex-direction: column; gap: 3px; }
+</style>
+
+<style>
+.opcoes { background: var(--surface); border: 1px solid var(--line); border-radius: 10px; padding: 16px; display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 16px; position: sticky; top: env(safe-area-inset-top, 0px); z-index: 5; }
+@media (max-width: 860px) { .opcoes { grid-template-columns: 1fr; position: static; } }
+.opcoes fieldset { border: 0; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 6px; min-width: 0; }
+.opcoes legend { font-size: 12px; font-weight: 700; text-transform: uppercase; letter-spacing: .05em; color: var(--muted); margin-bottom: 4px; }
+.seg { display: flex; flex-wrap: wrap; border: 1px solid var(--line); border-radius: 8px; overflow: hidden; }
+.seg label { flex: 1 1 auto; text-align: center; font-size: 13px; font-weight: 600; padding: 7px 10px; cursor: pointer; color: var(--muted); border-right: 1px solid var(--line); background: var(--surface); }
+.seg label:last-child { border-right: 0; }
+.seg input { position: absolute; opacity: 0; pointer-events: none; }
+.seg label:has(input:checked) { background: var(--accent); color: var(--surface); }
+.seg label:has(input:focus-visible) { outline: 2px solid var(--accent); outline-offset: -2px; }
+.help { font-size: 12.5px; color: var(--muted); line-height: 1.45; }
+.card.sel { border-color: var(--accent); box-shadow: 0 0 0 1px var(--accent); }
+.rules { display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 12px; }
+.rule-box { background: var(--surface); border: 1px solid var(--line); border-radius: 10px; padding: 14px; display: flex; flex-direction: column; gap: 8px; min-width: 0; font-size: 13.5px; }
+.rule-box h3 { font-size: 15px; display: flex; justify-content: space-between; gap: 8px; }
+.rule-box h3 span { font-family: var(--f-mono); font-size: 13px; color: var(--accent); }
+.rule-box table { font-size: 13px; }
+.rule-box td, .rule-box th { padding: 4px 8px; }
+.rule-box p { font-size: 13px; color: var(--muted); }
+tr.sub td { color: var(--muted); font-size: 13px; }
+tr.sub td:first-child { padding-left: 22px; }
+.oc { color: var(--crit); font-weight: 600; }
+</style>
+
+<div class="wrap">
+  <header>
+    <span class="eyebrow">Revisão do Score de Franquias · simulação</span>
+    <h1>Simulação do Score de Setembro</h1>
+    <p>A proposta da daily de 20/10 aplicada às <b id="nTot"></b> franquias do score de setembro/2026 que não estão em Integração. A regra vale a partir de janeiro/2027; setembro mostra onde a rede está hoje.</p>
+  </header>
+
+  <div class="opcoes" role="group" aria-label="Opções da simulação">
+    <fieldset>
+      <legend>Pontuação máxima</legend>
+      <div class="seg">
+        <label><input type="radio" name="esc" value="125">125</label>
+        <label><input type="radio" name="esc" value="115" checked>115</label>
+        <label><input type="radio" name="esc" value="110">110</label>
+      </div>
+      <span class="help" id="escHelp"></span>
+    </fieldset>
+    <fieldset>
+      <legend>Bloco de notas</legend>
+      <div class="seg">
+        <label><input type="radio" name="not" value="degraus" checked>Degraus</label>
+        <label><input type="radio" name="not" value="linear">Linear (como hoje)</label>
+      </div>
+      <span class="help" id="notHelp"></span>
+    </fieldset>
+    <fieldset>
+      <legend>Manutenção sem card no mês</legend>
+      <div class="seg">
+        <label><input type="radio" name="man" value="cinco" checked>Vale 5 (como hoje)</label>
+        <label><input type="radio" name="man" value="fora">Não entra</label>
+      </div>
+      <span class="help" id="manHelp"></span>
+    </fieldset>
+  </div>
+
+  <section>
+    <h2>Distribuição por faixa</h2>
+    <p class="muted">Faixas de hoje em todos os cenários: Excelente a partir de 95, Bom 80, Regular 65, Ruim 50, Péssimo abaixo de 50. O cenário marcado é o que está nos botões.</p>
+    <div class="scen" id="scen" style="grid-template-columns:repeat(auto-fit,minmax(200px,1fr))"></div>
+  </section>
+
+  <section>
+    <h2>A regra</h2>
+    <div class="rules" id="rules"></div>
+  </section>
+
+  <section>
+    <h2>Média da rede em cada bloco</h2>
+    <div class="tbl"><table id="medias"></table></div>
+  </section>
+
+  <section>
+    <h2>Boletim de cada franquia</h2>
+    <div class="controls">
+      <input id="q" type="search" placeholder="Buscar franquia" aria-label="Buscar franquia">
+      <select id="filtro" aria-label="Filtro">
+        <option value="todas">Todas as franquias</option>
+        <option value="caiu2">Caíram 2 faixas ou mais</option>
+        <option value="excCai">Excelente hoje que deixam de ser</option>
+        <option value="oc">Com ocorrência nova (abaixo de 50%)</option>
+      </select>
+      <select id="ordem" aria-label="Ordenar">
+        <option value="queda">Ordenar pela maior queda</option>
+        <option value="nome">Ordenar por nome</option>
+        <option value="novo">Ordenar pelo score novo</option>
+        <option value="hoje">Ordenar pelo score de hoje</option>
+      </select>
+      <span class="muted" id="cont"></span>
+    </div>
+    <p class="muted">Clique numa franquia para ver o boletim: o resultado de cada bloco, a nota, os pontos e o que falta para a próxima nota.</p>
+    <div class="tbl"><table><thead id="th"></thead><tbody id="tb"></tbody></table></div>
+  </section>
+
+  <div class="notes">
+    <b>De onde vêm os números</b>
+    <ul>
+      <li>Notas (check-in e limpeza, últimos 3 meses), avaliações por checkout, cards, ocorrências e indicações: como gravados no score de setembro.</li>
+      <li>Manutenção: regra atual do fechamento sobre os cards concluídos em setembro, sem os cards de responsabilidade do proprietário.</li>
+      <li>Pedido de avaliação: % das reservas Airbnb com checkout em setembro em que a franquia pediu avaliação (recurso existe desde 09/09).</li>
+      <li>Limpeza completa: % das limpezas dos checkouts de setembro com agente atribuído, checklist preenchido e pelo menos uma foto.</li>
+      <li>Ocorrência nova: leve (1 ponto) para cada critério abaixo de 50%.</li>
+    </ul>
+  </div>
+</div>
+
+<script>
+const R = [{"h":238,"n":"Adriana Bozeti","sa":114.2,"fa":"Excelente","a":5.0,"o":4.9,"av":0.4118,"cards":1.0,"ped":0.25,"nair":12,"lim":0.1176,"nlim":17,"mn":0,"mmed":null,"m35":0,"bi":[0,1.0,0],"pen":0},{"h":249,"n":"Agatha de Assis Anápolis","sa":98.9,"fa":"Excelente","a":4.872727272727273,"o":4.735294117647059,"av":0.4308,"cards":0.9313,"ped":0.2857,"nair":42,"lim":0.0,"nlim":72,"mn":0,"mmed":null,"m35":0,"bi":[2.0,1.0,0],"pen":2.0},{"h":251,"n":"Agatha de Assis Souza Gloria","sa":98.2,"fa":"Excelente","a":4.8473520249221185,"o":4.637096774193548,"av":0.323,"cards":0.999,"ped":0.0185,"nair":271,"lim":0.0,"nlim":524,"mn":4,"mmed":2.7,"m35":0,"bi":[5.0,5.0,1.0],"pen":0},{"h":45,"n":"Alan Mesquita Maciel","sa":97.1,"fa":"Excelente","a":4.892307692307693,"o":4.1,"av":0.5667,"cards":0.8729,"ped":0.0189,"nair":53,"lim":0.0,"nlim":65,"mn":0,"mmed":null,"m35":0,"bi":[0,0,0],"pen":0},{"h":200,"n":"Ana Carla de Aguiar Lopes","sa":99.7,"fa":"Excelente","a":4.9,"o":4.24,"av":0.5319,"cards":0.9362,"ped":0.0,"nair":71,"lim":0.6495,"nlim":97,"mn":8,"mmed":2.2,"m35":0,"bi":[0,0,0],"pen":0},{"h":230,"n":"Ana Carolina Assmus Barski","sa":103.0,"fa":"Excelente","a":4.8125,"o":4.7368421052631575,"av":0.5747,"cards":0.9895,"ped":0.0,"nair":65,"lim":0.0,"nlim":94,"mn":3,"mmed":15.2,"m35":5,"bi":[0,0,0],"pen":0},{"h":123,"n":"Ana Lúcia Gasparello Cruz","sa":103.4,"fa":"Excelente","a":4.877976190476191,"o":4.4868421052631575,"av":0.4882,"cards":0.9916,"ped":0.1561,"nair":205,"lim":0.0,"nlim":326,"mn":2,"mmed":0.1,"m35":0,"bi":[3.0,2.0,1.0],"pen":0},{"h":127,"n":"Ana Márcia Pereira Buzzacchino","sa":84.0,"fa":"Bom","a":4.634703196347032,"o":4.445945945945946,"av":0.4691,"cards":0.3995,"ped":0.1314,"nair":175,"lim":0.0,"nlim":257,"mn":8,"mmed":0.3,"m35":0,"bi":[2.0,1.0,0],"pen":8.0},{"h":75,"n":"Ana Paula Friedrich de Oliveira","sa":106.2,"fa":"Excelente","a":4.868835257082896,"o":4.678571428571429,"av":0.5082,"cards":0.9823,"ped":0.0,"nair":547,"lim":0.0718,"nlim":724,"mn":2,"mmed":2.0,"m35":0,"bi":[5.0,5.0,1.0],"pen":1.0},{"h":48,"n":"André Demetrio","sa":112.7,"fa":"Excelente","a":4.9491525423728815,"o":4.833333333333333,"av":0.5078,"cards":0.9804,"ped":0.3011,"nair":93,"lim":0.0149,"nlim":134,"mn":7,"mmed":0.3,"m35":0,"bi":[1.0,0,0],"pen":0},{"h":250,"n":"Andrea Mara dos Santos Podlasinski","sa":110.2,"fa":"Excelente","a":4.86734693877551,"o":4.75,"av":0.6087,"cards":1.0,"ped":0.7429,"nair":35,"lim":0.0612,"nlim":49,"mn":0,"mmed":null,"m35":0,"bi":[1.0,0,0],"pen":0},{"h":46,"n":"Andreia Real da Rosa","sa":101.3,"fa":"Excelente","a":4.81404958677686,"o":4.487804878048781,"av":0.5935,"cards":0.9605,"ped":0.0,"nair":92,"lim":0.0,"nlim":131,"mn":12,"mmed":47.6,"m35":0,"bi":[0,0,0],"pen":0},{"h":282,"n":"Bernardo Lana Costa","sa":114.7,"fa":"Excelente","a":4.926829268292683,"o":null,"av":0.56,"cards":1.0,"ped":0.2083,"nair":24,"lim":0.0,"nlim":26,"mn":0,"mmed":null,"m35":0,"bi":[1.0,0,1.0],"pen":0},{"h":194,"n":"Camila Bresolin Pereira","sa":87.0,"fa":"Bom","a":4.821428571428571,"o":4.425,"av":0.4423,"cards":0.9942,"ped":0.655,"nair":229,"lim":0.0,"nlim":276,"mn":2,"mmed":0.0,"m35":0,"bi":[3.0,2.0,1.0],"pen":4.0},{"h":99,"n":"Camila Moura Lacerda","sa":102.1,"fa":"Excelente","a":4.890804597701149,"o":4.707492795389049,"av":0.3727,"cards":0.987,"ped":0.0,"nair":407,"lim":0.0,"nlim":1002,"mn":8,"mmed":8.1,"m35":0,"bi":[4.0,1.0,0],"pen":4.0},{"h":191,"n":"Camila Silva Costa","sa":98.2,"fa":"Excelente","a":4.731343283582089,"o":4.75,"av":0.5254,"cards":0,"ped":0.0,"nair":50,"lim":0.0,"nlim":60,"mn":0,"mmed":null,"m35":0,"bi":[1.0,1.0,0],"pen":0},{"h":257,"n":"Carine Cerqueira de Carvalho","sa":86.6,"fa":"Bom","a":4.751798561151079,"o":4.642857142857143,"av":0.4318,"cards":0.9572,"ped":0.0,"nair":106,"lim":0.0,"nlim":139,"mn":17,"mmed":6.7,"m35":0,"bi":[0,0,0],"pen":5.0},{"h":150,"n":"Carlos Eduardo Inácio Diniz","sa":104.1,"fa":"Excelente","a":4.901785714285714,"o":4.714285714285714,"av":0.52,"cards":1.0,"ped":0.0,"nair":22,"lim":0.0,"nlim":26,"mn":0,"mmed":null,"m35":0,"bi":[0,0,0],"pen":0},{"h":114,"n":"Caroline Sorondo Vaghetti","sa":88.4,"fa":"Bom","a":4.825949367088608,"o":4.4,"av":0.5263,"cards":0.987,"ped":0.0,"nair":99,"lim":0.0873,"nlim":126,"mn":4,"mmed":68.9,"m35":0,"bi":[1.0,2.0,1.0],"pen":6.0},{"h":70,"n":"Cassiana Outeiro Silva de Souza","sa":94.5,"fa":"Bom","a":4.791666666666667,"o":4.75,"av":0.4783,"cards":0.2653,"ped":0.0,"nair":39,"lim":0.0,"nlim":50,"mn":0,"mmed":null,"m35":0,"bi":[0,0,0],"pen":2.0},{"h":158,"n":"Christina Elisabeth Carpes Antunes","sa":101.7,"fa":"Excelente","a":4.841346153846154,"o":4.588235294117647,"av":0.4202,"cards":0.8426,"ped":0.593,"nair":86,"lim":0.0,"nlim":129,"mn":3,"mmed":15.3,"m35":0,"bi":[0,0,0],"pen":0},{"h":212,"n":"Cingridi Cristina Mariano","sa":96.8,"fa":"Excelente","a":4.81875,"o":4.6875,"av":0.4625,"cards":0.9815,"ped":0.0,"nair":70,"lim":0.2887,"nlim":97,"mn":1,"mmed":63.4,"m35":0,"bi":[2.0,2.0,0],"pen":2.0},{"h":256,"n":"Cleverson de Oliveira Redivo","sa":99.0,"fa":"Excelente","a":4.714285714285714,"o":4.545454545454546,"av":0.5357,"cards":0.9649,"ped":0.0,"nair":22,"lim":0.0,"nlim":28,"mn":0,"mmed":null,"m35":0,"bi":[5.0,5.0,0],"pen":0},{"h":284,"n":"Daniel de Paiva e Sales","sa":115.7,"fa":"Excelente","a":4.9523809523809526,"o":null,"av":0.5455,"cards":0.9535,"ped":0.9091,"nair":22,"lim":0.0,"nlim":22,"mn":0,"mmed":null,"m35":0,"bi":[3.0,2.0,0],"pen":0},{"h":201,"n":"Daniela Lopes Nasario","sa":102.6,"fa":"Excelente","a":5.0,"o":4.833333333333333,"av":0.4118,"cards":0.4375,"ped":0.0,"nair":14,"lim":0.0,"nlim":17,"mn":0,"mmed":null,"m35":0,"bi":[0,0,0],"pen":0},{"h":246,"n":"Débora Renata Gomes Soares","sa":84.1,"fa":"Bom","a":4.716216216216216,"o":4.15,"av":0.5333,"cards":0.9,"ped":0.3548,"nair":31,"lim":0.9574,"nlim":47,"mn":0,"mmed":null,"m35":0,"bi":[0,0,0],"pen":0},{"h":196,"n":"Dhennyfer Rosa de Almeida","sa":112.1,"fa":"Excelente","a":4.809859154929577,"o":5.0,"av":0.5246,"cards":0.9612,"ped":0.037,"nair":54,"lim":0.0,"nlim":70,"mn":0,"mmed":null,"m35":0,"bi":[0,0,0],"pen":0},{"h":254,"n":"Diego Bezerra da Silva","sa":102.4,"fa":"Excelente","a":4.849056603773585,"o":4.5,"av":0.6765,"cards":0.971,"ped":0.5152,"nair":33,"lim":0.0,"nlim":35,"mn":0,"mmed":null,"m35":0,"bi":[1.0,0,0],"pen":0},{"h":192,"n":"Diego Rafael Padilha dos Santos","sa":107.8,"fa":"Excelente","a":4.861111111111111,"o":4.7272727272727275,"av":0.5682,"cards":0.9438,"ped":0.5526,"nair":38,"lim":0.2174,"nlim":46,"mn":0,"mmed":null,"m35":2,"bi":[0,0,0],"pen":0},{"h":8,"n":"Dineia Pedroso de Almeida","sa":98.9,"fa":"Excelente","a":4.8316831683168315,"o":4.568421052631579,"av":0.3782,"cards":0.9325,"ped":0.0,"nair":85,"lim":0.0,"nlim":171,"mn":1,"mmed":24.3,"m35":0,"bi":[0,0,0],"pen":2.0},{"h":148,"n":"Dreicom Adolfo Neckel Wolter","sa":66.2,"fa":"Regular","a":4.558988764044944,"o":4.346666666666667,"av":0.4083,"cards":0.9273,"ped":0.0,"nair":123,"lim":0.0,"nlim":185,"mn":10,"mmed":70.7,"m35":1,"bi":[0,0,0],"pen":10.0},{"h":221,"n":"Driely Lohanne Constantino","sa":89.6,"fa":"Bom","a":4.928571428571429,"o":4.0,"av":0.3333,"cards":0.5,"ped":0.0,"nair":3,"lim":0.0,"nlim":3,"mn":0,"mmed":null,"m35":0,"bi":[0,0,0],"pen":0},{"h":93,"n":"Edilson Machado da Silva","sa":108.9,"fa":"Excelente","a":4.877272727272727,"o":4.766666666666667,"av":0.5348,"cards":0.9922,"ped":0.1842,"nair":152,"lim":0.0149,"nlim":202,"mn":1,"mmed":0.0,"m35":0,"bi":[2.0,0,0],"pen":0},{"h":219,"n":"Edite Alves","sa":93.5,"fa":"Bom","a":4.770758122743683,"o":4.684210526315789,"av":0.4879,"cards":0.2943,"ped":0.0,"nair":173,"lim":0.0,"nlim":218,"mn":2,"mmed":27.9,"m35":0,"bi":[5.0,2.0,1.0],"pen":6.0},{"h":245,"n":"Eduardo José Pereira Santos","sa":90.1,"fa":"Bom","a":4.868421052631579,"o":4.409090909090909,"av":0.4576,"cards":0.8889,"ped":0.0,"nair":38,"lim":0.0,"nlim":64,"mn":1,"mmed":0.0,"m35":0,"bi":[2.0,0,0],"pen":6.0},{"h":283,"n":"Erica Bianca da Silva","sa":113.7,"fa":"Excelente","a":4.866666666666666,"o":5.0,"av":0.6296,"cards":0.9375,"ped":0.0,"nair":44,"lim":0.0182,"nlim":55,"mn":5,"mmed":3.4,"m35":0,"bi":[3.0,1.0,0],"pen":1.0},{"h":29,"n":"Erion Xhafaj","sa":113.4,"fa":"Excelente","a":4.9,"o":4.90625,"av":0.5503,"cards":1.0,"ped":0.0,"nair":151,"lim":0.0,"nlim":187,"mn":0,"mmed":null,"m35":0,"bi":[0,0,0],"pen":0},{"h":53,"n":"Evelyn Gabriela dos Santos","sa":95.3,"fa":"Excelente","a":4.637931034482759,"o":4.875,"av":0.5526,"cards":0.5714,"ped":0.2,"nair":30,"lim":0.0227,"nlim":44,"mn":9,"mmed":17.1,"m35":0,"bi":[0,0,0],"pen":0},{"h":66,"n":"Fábio Moreira Campos Monteiro","sa":96.0,"fa":"Excelente","a":4.769135802469136,"o":4.504273504273504,"av":0.5658,"cards":1.0,"ped":0.0046,"nair":218,"lim":0.0337,"nlim":297,"mn":6,"mmed":14.3,"m35":0,"bi":[2.0,2.0,0],"pen":4.0},{"h":253,"n":"Fernanda Kieling Kist","sa":102.0,"fa":"Excelente","a":4.9071428571428575,"o":4.777777777777778,"av":0.5,"cards":0.2906,"ped":0.0,"nair":59,"lim":0.1548,"nlim":84,"mn":1,"mmed":75.8,"m35":6,"bi":[0,0,0],"pen":2.0},{"h":193,"n":"Flávio de Souza Porto","sa":89.0,"fa":"Bom","a":4.860655737704918,"o":4.725,"av":0.4364,"cards":0.9828,"ped":0.0,"nair":29,"lim":0.0,"nlim":65,"mn":0,"mmed":null,"m35":0,"bi":[0,0,0],"pen":0},{"h":232,"n":"Francisco Diey Brito","sa":110.1,"fa":"Excelente","a":4.9375,"o":4.785714285714286,"av":0.431,"cards":0.8696,"ped":0.0,"nair":37,"lim":0.0,"nlim":60,"mn":0,"mmed":null,"m35":0,"bi":[0,0,3.0],"pen":0},{"h":13,"n":"Gabriela da Luz Nunes","sa":96.1,"fa":"Excelente","a":4.672897196261682,"o":4.823529411764706,"av":0.3455,"cards":0.9469,"ped":0.0,"nair":58,"lim":0.4923,"nlim":130,"mn":5,"mmed":0.5,"m35":0,"bi":[1.0,0,0],"pen":1.0},{"h":160,"n":"Giselia Soares da Silva","sa":97.5,"fa":"Excelente","a":4.786407766990291,"o":4.636363636363637,"av":0.4556,"cards":0.9946,"ped":0.0469,"nair":64,"lim":0.0,"nlim":100,"mn":4,"mmed":1.3,"m35":0,"bi":[1.0,0,0],"pen":0},{"h":181,"n":"Gladys Timmerman","sa":118.3,"fa":"Excelente","a":4.967213114754099,"o":4.972477064220183,"av":0.6643,"cards":0.9464,"ped":0.0,"nair":118,"lim":0.0,"nlim":147,"mn":2,"mmed":0.0,"m35":0,"bi":[0,0,0],"pen":0},{"h":231,"n":"Glauciene Sacramento Santos","sa":98.5,"fa":"Excelente","a":4.787878787878788,"o":4.777777777777778,"av":0.42,"cards":0.6271,"ped":0.0952,"nair":42,"lim":0.0,"nlim":50,"mn":1,"mmed":0.0,"m35":0,"bi":[2.0,2.0,0],"pen":4.0},{"h":74,"n":"Gustavo Henrique de Barros Silva","sa":104.5,"fa":"Excelente","a":4.904958677685951,"o":4.7952755905511815,"av":0.5398,"cards":0.9957,"ped":0.0,"nair":66,"lim":0.0083,"nlim":120,"mn":0,"mmed":null,"m35":1,"bi":[0,0,0],"pen":5.0},{"h":49,"n":"Gustavo Ribas","sa":111.9,"fa":"Excelente","a":4.945859872611465,"o":4.8125,"av":0.6435,"cards":1.0,"ped":0.0092,"nair":109,"lim":0.0,"nlim":123,"mn":0,"mmed":null,"m35":0,"bi":[1.0,0,0],"pen":0},{"h":252,"n":"IAM Consultoria","sa":88.0,"fa":"Bom","a":4.8,"o":4.444839857651245,"av":0.3692,"cards":0.9582,"ped":0.0,"nair":203,"lim":0.0,"nlim":360,"mn":4,"mmed":0.2,"m35":0,"bi":[0,0,1.0],"pen":4.0},{"h":55,"n":"Isadora Corrêa de Oliveira","sa":107.9,"fa":"Excelente","a":4.848837209302325,"o":4.74468085106383,"av":0.6226,"cards":0.9459,"ped":0.0,"nair":21,"lim":0.0,"nlim":56,"mn":0,"mmed":null,"m35":0,"bi":[0,0,0],"pen":0},{"h":115,"n":"Itatiana Marques de Moura","sa":84.6,"fa":"Bom","a":4.633333333333334,"o":4.75,"av":0.4348,"cards":0.8409,"ped":0.0,"nair":33,"lim":0.0,"nlim":48,"mn":0,"mmed":null,"m35":0,"bi":[1.0,0,1.0],"pen":8.0},{"h":277,"n":"Izana Serra Lima","sa":111.5,"fa":"Excelente","a":4.948979591836735,"o":4.75,"av":0.5897,"cards":1.0,"ped":0.5135,"nair":37,"lim":0.186,"nlim":43,"mn":1,"mmed":0.0,"m35":0,"bi":[3.0,0,0],"pen":0},{"h":262,"n":"Jaciane Melo Graciliano","sa":98.7,"fa":"Excelente","a":4.758620689655173,"o":4.705882352941177,"av":0.4304,"cards":1.0,"ped":0.0,"nair":54,"lim":0.5057,"nlim":87,"mn":4,"mmed":0.4,"m35":0,"bi":[2.0,0,0],"pen":0},{"h":40,"n":"Jane Terezinha de Souza de Jesus","sa":107.9,"fa":"Excelente","a":4.803482587064677,"o":4.871428571428571,"av":0.5029,"cards":0.7577,"ped":0.0167,"nair":120,"lim":0.0,"nlim":182,"mn":0,"mmed":null,"m35":0,"bi":[0,3.0,0],"pen":0},{"h":41,"n":"Jayson Luckemeyer","sa":106.5,"fa":"Excelente","a":4.882716049382716,"o":4.714285714285714,"av":0.5946,"cards":1.0,"ped":0.0,"nair":81,"lim":0.0,"nlim":120,"mn":3,"mmed":0.2,"m35":0,"bi":[1.0,1.0,0],"pen":0},{"h":22,"n":"Jeferson Luis Fernandes","sa":98.8,"fa":"Excelente","a":4.928571428571429,"o":4.357142857142857,"av":0.4514,"cards":0.7945,"ped":0.0531,"nair":113,"lim":0.0,"nlim":155,"mn":1,"mmed":20.7,"m35":0,"bi":[1.0,0,1.0],"pen":2.0},{"h":173,"n":"Jéssica Schirley Sibilio Dutra Jordão Macedo","sa":105.1,"fa":"Excelente","a":4.723809523809524,"o":4.9375,"av":0.5833,"cards":0.9286,"ped":0.0137,"nair":73,"lim":0.0,"nlim":96,"mn":6,"mmed":0.0,"m35":0,"bi":[2.0,0,0],"pen":1.0},{"h":263,"n":"Jhenyffer Paola Ramos da Silva","sa":77.3,"fa":"Regular","a":4.764516129032258,"o":4.622950819672131,"av":0.5283,"cards":0.963,"ped":0.0123,"nair":81,"lim":0.0256,"nlim":117,"mn":0,"mmed":null,"m35":0,"bi":[0,0,0],"pen":18.0},{"h":227,"n":"John Erik Gasparello","sa":105.5,"fa":"Excelente","a":4.827586206896552,"o":4.875,"av":0.4404,"cards":0.9812,"ped":0.0899,"nair":89,"lim":0.0085,"nlim":118,"mn":7,"mmed":0.0,"m35":0,"bi":[0,0,0],"pen":0},{"h":285,"n":"Jorge de Figueiredo Sampaio Filho","sa":116.3,"fa":"Excelente","a":4.9375,"o":5.0,"av":0.8824,"cards":0.9706,"ped":0.0,"nair":15,"lim":0.0,"nlim":18,"mn":9,"mmed":22.2,"m35":0,"bi":[0,0,0],"pen":4.0},{"h":215,"n":"José Fernando de Campos","sa":80.4,"fa":"Bom","a":4.648148148148148,"o":4.519230769230769,"av":0.376,"cards":0.9467,"ped":0.0109,"nair":92,"lim":0.0763,"nlim":131,"mn":1,"mmed":0.0,"m35":0,"bi":[0,0,0],"pen":10.0},{"h":229,"n":"Juliana Lemos da Silva","sa":80.7,"fa":"Bom","a":4.75,"o":4.277777777777778,"av":0.4342,"cards":1.0,"ped":0.0,"nair":62,"lim":0.0,"nlim":81,"mn":9,"mmed":38.2,"m35":0,"bi":[0,0,0],"pen":4.0},{"h":60,"n":"Kathellyne Soares de Moraes","sa":90.0,"fa":"Bom","a":4.574074074074074,"o":4.7,"av":0.493,"cards":0.453,"ped":0.1837,"nair":49,"lim":0.1975,"nlim":81,"mn":0,"mmed":null,"m35":0,"bi":[0,0,0],"pen":1.0},{"h":47,"n":"Katia Leite do Nascimento Emmel","sa":108.2,"fa":"Excelente","a":4.890575079872204,"o":4.708571428571428,"av":0.4845,"cards":1.0,"ped":0.2204,"nair":431,"lim":0.0,"nlim":651,"mn":2,"mmed":0.0,"m35":0,"bi":[4.0,1.0,0],"pen":0},{"h":235,"n":"Kemille Negromonte de Souza","sa":106.5,"fa":"Excelente","a":4.8980263157894735,"o":4.588235294117647,"av":0.5214,"cards":1.0,"ped":0.0,"nair":111,"lim":0.0138,"nlim":145,"mn":1,"mmed":0.1,"m35":0,"bi":[2.0,1.0,0],"pen":0},{"h":149,"n":"Letícia Fagundes","sa":105.9,"fa":"Excelente","a":4.885714285714286,"o":4.777777777777778,"av":0.5149,"cards":1.0,"ped":0.2261,"nair":115,"lim":0.7842,"nlim":139,"mn":0,"mmed":null,"m35":0,"bi":[1.0,0,0],"pen":0},{"h":244,"n":"Luan Navarro","sa":103.0,"fa":"Excelente","a":4.859756097560975,"o":4.8,"av":0.4186,"cards":1.0,"ped":0.0,"nair":74,"lim":0.0,"nlim":94,"mn":3,"mmed":0.4,"m35":0,"bi":[0,0,0],"pen":2.0},{"h":78,"n":"Luanda Tavares Santana","sa":94.4,"fa":"Bom","a":4.810344827586207,"o":4.490909090909091,"av":0.4811,"cards":0.912,"ped":0.0405,"nair":74,"lim":0.0,"nlim":120,"mn":3,"mmed":77.6,"m35":0,"bi":[0,0,0],"pen":0},{"h":286,"n":"Lucas Abel da Silveira","sa":89.1,"fa":"Bom","a":4.357142857142857,"o":5.0,"av":0.7,"cards":0.85,"ped":0.8571,"nair":7,"lim":0.0,"nlim":11,"mn":6,"mmed":46.2,"m35":0,"bi":[0,0,0],"pen":2.0},{"h":260,"n":"Lucas Sena da Silva","sa":109.6,"fa":"Excelente","a":4.904255319148936,"o":4.730769230769231,"av":0.6,"cards":0.3355,"ped":0.1212,"nair":66,"lim":0.1071,"nlim":84,"mn":2,"mmed":0.0,"m35":0,"bi":[0,0,0],"pen":0},{"h":147,"n":"Lucas Taniguti Bertarelli","sa":102.0,"fa":"Excelente","a":4.87248322147651,"o":4.542857142857143,"av":0.3818,"cards":0.9983,"ped":0.0,"nair":233,"lim":0.0,"nlim":309,"mn":2,"mmed":2.0,"m35":0,"bi":[1.0,0,0],"pen":0},{"h":124,"n":"Luciana Dellamora Pata Fernandes Lima","sa":84.0,"fa":"Bom","a":4.734177215189874,"o":4.2,"av":0.7536,"cards":0.4599,"ped":0.0,"nair":61,"lim":0.0141,"nlim":71,"mn":1,"mmed":0.0,"m35":0,"bi":[1.0,1.0,0],"pen":7.0},{"h":216,"n":"Lucilene Cora","sa":102.3,"fa":"Excelente","a":4.8619047619047615,"o":4.5,"av":0.6092,"cards":0.978,"ped":0.0843,"nair":83,"lim":0.0,"nlim":94,"mn":1,"mmed":0.0,"m35":0,"bi":[4.0,4.0,0],"pen":2.0},{"h":261,"n":"Luila Chiste Lage","sa":109.2,"fa":"Excelente","a":4.897196261682243,"o":4.954545454545454,"av":0.5341,"cards":0.9829,"ped":0.05,"nair":60,"lim":0.0,"nlim":98,"mn":1,"mmed":0.0,"m35":0,"bi":[0,0,0],"pen":0},{"h":81,"n":"Luís Eduardo Oliveira Machado","sa":107.7,"fa":"Excelente","a":4.819767441860465,"o":4.95,"av":0.4805,"cards":1.0,"ped":0.193,"nair":57,"lim":0.0,"nlim":87,"mn":2,"mmed":4.8,"m35":0,"bi":[1.0,0,0],"pen":0},{"h":233,"n":"Marcela S Gambelli","sa":105.8,"fa":"Excelente","a":4.889908256880734,"o":4.732394366197183,"av":0.5641,"cards":1.0,"ped":0.0234,"nair":128,"lim":0.0,"nlim":163,"mn":6,"mmed":0.0,"m35":0,"bi":[0,0,0],"pen":4.0},{"h":236,"n":"Maria Carolina de Rodrigues de Souza","sa":101.7,"fa":"Excelente","a":4.861635220125786,"o":4.774647887323944,"av":0.5145,"cards":1.0,"ped":0.1182,"nair":110,"lim":0.0,"nlim":155,"mn":2,"mmed":10.8,"m35":0,"bi":[4.0,1.0,0],"pen":0},{"h":12,"n":"Mariana Lopes Ribeiro De Carvalho","sa":108.3,"fa":"Excelente","a":4.895833333333333,"o":4.7894736842105265,"av":0.4911,"cards":0.9762,"ped":0.0,"nair":89,"lim":0.0,"nlim":122,"mn":8,"mmed":16.9,"m35":4,"bi":[0,0,0],"pen":0},{"h":247,"n":"Mariana Paola Monteiro Ferrari","sa":104.2,"fa":"Excelente","a":4.934782608695652,"o":4.75,"av":0.5313,"cards":0.8281,"ped":0.0,"nair":25,"lim":0.0,"nlim":35,"mn":0,"mmed":null,"m35":1,"bi":[1.0,0,0],"pen":1.0},{"h":226,"n":"Matias Clementino Trindade dos Santos","sa":94.4,"fa":"Bom","a":4.751908396946565,"o":4.535714285714286,"av":0.4173,"cards":0.9155,"ped":0.0,"nair":119,"lim":0.0,"nlim":158,"mn":6,"mmed":0.1,"m35":0,"bi":[4.0,0,0],"pen":4.0},{"h":24,"n":"Nabiha Kasmas Denis","sa":109.5,"fa":"Excelente","a":4.8652173913043475,"o":4.7631578947368425,"av":0.5508,"cards":1.0,"ped":0.0,"nair":96,"lim":0.0,"nlim":123,"mn":21,"mmed":0.3,"m35":0,"bi":[1.0,0,0],"pen":0},{"h":255,"n":"Naihana Loyola Andriani","sa":103.3,"fa":"Excelente","a":4.864583333333333,"o":4.75,"av":0.4407,"cards":0.877,"ped":0.0,"nair":49,"lim":0.0323,"nlim":62,"mn":2,"mmed":0.0,"m35":0,"bi":[5.0,3.0,0],"pen":4.0},{"h":175,"n":"Patrícia Aparecida de Melo","sa":90.9,"fa":"Bom","a":4.7727272727272725,"o":4.5,"av":0.5556,"cards":0.9648,"ped":0.0,"nair":57,"lim":0.0,"nlim":82,"mn":3,"mmed":0.8,"m35":0,"bi":[2.0,2.0,0],"pen":0},{"h":155,"n":"Pedro Henrique Do Erre de Jesus","sa":82.6,"fa":"Bom","a":4.683035714285714,"o":4.576923076923077,"av":0.4928,"cards":0.9247,"ped":0.5833,"nair":48,"lim":0.7945,"nlim":73,"mn":6,"mmed":0.0,"m35":0,"bi":[0,0,0],"pen":6.0},{"h":213,"n":"Rael Michaelsen","sa":105.1,"fa":"Excelente","a":4.834254143646409,"o":4.6976744186046515,"av":0.5409,"cards":1.0,"ped":0.8168,"nair":131,"lim":0.0,"nlim":191,"mn":2,"mmed":23.4,"m35":0,"bi":[5.0,2.0,0],"pen":1.0},{"h":278,"n":"Reinaldo Jorge Fernandes","sa":84.7,"fa":"Bom","a":4.6891891891891895,"o":4.65625,"av":0.5333,"cards":0.9801,"ped":0.1791,"nair":67,"lim":0.0,"nlim":78,"mn":2,"mmed":0.6,"m35":5,"bi":[0,0,0],"pen":1.0},{"h":128,"n":"Ricardo Portella Junior","sa":96.2,"fa":"Excelente","a":4.684466019417476,"o":4.788461538461538,"av":0.5214,"cards":0.9872,"ped":0.0,"nair":85,"lim":0.0,"nlim":125,"mn":0,"mmed":null,"m35":2,"bi":[3.0,0,1.0],"pen":2.0},{"h":240,"n":"Roberta de Almeida Turra Vieira","sa":98.0,"fa":"Excelente","a":4.802919708029197,"o":4.708333333333333,"av":0.4503,"cards":0.9094,"ped":0.0333,"nair":120,"lim":0.0,"nlim":177,"mn":4,"mmed":0.0,"m35":0,"bi":[5.0,2.0,5.0],"pen":0},{"h":165,"n":"Roberta de Freitas Costa","sa":98.7,"fa":"Excelente","a":4.7918994413407825,"o":4.621052631578947,"av":0.4347,"cards":0.9989,"ped":0.1773,"nair":282,"lim":0.0329,"nlim":456,"mn":5,"mmed":1.7,"m35":0,"bi":[1.0,0,0],"pen":0},{"h":197,"n":"Rodrigo Maruco Ruas de Oliveira","sa":85.4,"fa":"Bom","a":4.789719626168225,"o":4.478494623655914,"av":0.2583,"cards":0.9981,"ped":0.0,"nair":93,"lim":0.0,"nlim":276,"mn":1,"mmed":27.4,"m35":0,"bi":[0,0,0],"pen":3.0},{"h":61,"n":"Sandra Maria Gervásio Sales","sa":106.2,"fa":"Excelente","a":4.863013698630137,"o":4.642857142857143,"av":0.4945,"cards":1.0,"ped":0.058,"nair":69,"lim":0.0,"nlim":100,"mn":1,"mmed":0.0,"m35":0,"bi":[1.0,1.0,0],"pen":0},{"h":84,"n":"Silvia Regina Costa Silva","sa":106.1,"fa":"Excelente","a":4.925465838509317,"o":4.5625,"av":0.4737,"cards":1.0,"ped":0.0714,"nair":112,"lim":0.0054,"nlim":186,"mn":1,"mmed":0.0,"m35":0,"bi":[4.0,2.0,0],"pen":0},{"h":214,"n":"Sônia Maria Gervásio Sales","sa":99.8,"fa":"Excelente","a":4.834302325581396,"o":4.6,"av":0.4101,"cards":1.0,"ped":0.0,"nair":135,"lim":0.0052,"nlim":192,"mn":6,"mmed":7.5,"m35":0,"bi":[1.0,0,0],"pen":3.0},{"h":279,"n":"Stefanie Maria Castro","sa":99.5,"fa":"Excelente","a":4.76984126984127,"o":4.785714285714286,"av":0.5366,"cards":1.0,"ped":0.0,"nair":36,"lim":0.0,"nlim":42,"mn":3,"mmed":0.0,"m35":0,"bi":[0,0,0],"pen":0},{"h":234,"n":"Thiago Reis","sa":103.6,"fa":"Excelente","a":4.760416666666667,"o":5.0,"av":0.6061,"cards":1.0,"ped":0.0385,"nair":26,"lim":0.0,"nlim":37,"mn":3,"mmed":0.0,"m35":0,"bi":[0,0,0],"pen":0},{"h":248,"n":"Thiago Rodrigues Pinto","sa":95.1,"fa":"Excelente","a":4.823170731707317,"o":4.333333333333333,"av":0.54,"cards":1.0,"ped":0.2609,"nair":46,"lim":0.0545,"nlim":55,"mn":4,"mmed":0.0,"m35":0,"bi":[2.0,0,0],"pen":2.0},{"h":276,"n":"Tiago dos Santos e Santos","sa":71.7,"fa":"Regular","a":4.609154929577465,"o":4.354166666666667,"av":0.4028,"cards":1.0,"ped":0.0,"nair":119,"lim":0.0,"nlim":160,"mn":21,"mmed":40.8,"m35":11,"bi":[0,0,0],"pen":6.0},{"h":241,"n":"Vinicius Vieira dos Reis","sa":95.8,"fa":"Excelente","a":4.765,"o":4.7,"av":0.4135,"cards":1.0,"ped":0.0235,"nair":85,"lim":0.0,"nlim":109,"mn":1,"mmed":0.0,"m35":0,"bi":[0,0,0],"pen":0},{"h":32,"n":"Vistas Gestão Rural","sa":92.7,"fa":"Bom","a":4.823333333333333,"o":4.770833333333333,"av":0.2305,"cards":0.9964,"ped":0.0,"nair":72,"lim":0.9439,"nlim":285,"mn":0,"mmed":null,"m35":43,"bi":[0,0,0],"pen":0},{"h":239,"n":"William Aguiar Messias","sa":103.9,"fa":"Excelente","a":4.87962962962963,"o":4.657894736842105,"av":0.5045,"cards":1.0,"ped":0.0108,"nair":93,"lim":0.0,"nlim":122,"mn":0,"mmed":null,"m35":0,"bi":[1.0,0,0],"pen":0},{"h":139,"n":"Wolnei Roberto Ramos","sa":100.7,"fa":"Excelente","a":4.769014084507043,"o":4.760330578512397,"av":0.4274,"cards":0.9986,"ped":0.0,"nair":273,"lim":0.0,"nlim":379,"mn":4,"mmed":0.7,"m35":0,"bi":[5.0,2.0,0],"pen":4.0}];
+const F = ["Excelente", "Bom", "Regular", "Ruim", "Péssimo"];
+const COR = { "Excelente": "var(--exc)", "Bom": "var(--bom)", "Regular": "var(--reg)", "Ruim": "var(--ruim)", "Péssimo": "var(--crit)" };
+const PESOS = {
+  125: { notas: 50, aval: 20, uso: 15, manut: 20, cards: 10 },
+  115: { notas: 45, aval: 20, uso: 10, manut: 20, cards: 10 },
+  110: { notas: 40, aval: 20, uso: 10, manut: 20, cards: 10 },
+};
+const BLOCO = { notas: "Notas dos hóspedes", aval: "Avaliações por checkout", uso: "Uso do sistema", manut: "Manutenção", cards: "Cards de check-in e checkout" };
+const DEG = { notas: [4.40, 4.50, 4.60, 4.70, 4.80], aval: [0.50, 0.55, 0.60, 0.65, 0.70], uso: [0.50, 0.60, 0.70, 0.80, 0.90] };
+const MAN = [7, 14, 21, 28, 35];
+const BONUS_TETO = 10;
+const nivel = f => F.indexOf(f);
+const $ = id => document.getElementById(id);
+const br = (x, d) => x.toLocaleString("pt-BR", { minimumFractionDigits: d, maximumFractionDigits: d });
+const pc = v => br(v * 100, 0) + "%";
+const notaChip = n => `<span class="nota ${n == null ? "nx" : "n" + n}">${n == null ? "–" : n}</span>`;
+$("nTot").textContent = R.length;
+
+function degrau(v, lims) { let n = 0; lims.forEach((l, i) => { if (v >= l - 1e-9) n = i + 1; }); return n; }
+function faixa(s) { return s >= 95 ? "Excelente" : s >= 80 ? "Bom" : s >= 65 ? "Regular" : s >= 50 ? "Ruim" : "Péssimo"; }
+function opcoes() {
+  return { esc: +document.querySelector('input[name="esc"]:checked').value,
+    not: document.querySelector('input[name="not"]:checked').value,
+    man: document.querySelector('input[name="man"]:checked').value };
+}
+
+function calcula(r, o) {
+  const P = PESOS[o.esc], b = {}, oc = [];
+  // notas
+  const comb = r.a != null && r.o != null ? 0.6 * r.a + 0.4 * r.o : (r.a != null ? r.a : r.o);
+  if (comb == null) b.notas = null;
+  else if (o.not === "degraus") { const n = degrau(comb, DEG.notas); b.notas = { comb, nota: n, pts: n / 5 * P.notas }; }
+  else b.notas = { comb, pts: Math.max(0, comb - 4) * P.notas };
+  // avaliações por checkout
+  const na = degrau(r.av, DEG.aval);
+  if (r.av < 0.5) oc.push("Avaliações por checkout abaixo de 50%");
+  b.aval = { v: r.av, nota: na, pts: na / 5 * P.aval };
+  // uso do sistema
+  const itens = [];
+  const ped = r.nair >= 5 ? r.ped : null, lim = r.nlim >= 5 ? r.lim : null;
+  const sub = {};
+  for (const [k, v, nome] of [["ped", ped, "Pedido de avaliação"], ["lim", lim, "Limpeza completa"]]) {
+    if (v == null) { sub[k] = null; continue; }
+    const n = degrau(v, DEG.uso); sub[k] = { v, nota: n }; itens.push(n);
+    if (v < 0.5) oc.push(nome + " abaixo de 50%");
+  }
+  b.uso = itens.length ? { sub, nota: itens.reduce((a, c) => a + c, 0) / itens.length, pts: itens.reduce((a, c) => a + c, 0) / itens.length / 5 * P.uso } : null;
+  if (b.uso == null) b.usoSub = sub;
+  // manutenção
+  let mn;
+  if (r.m35 > 0) mn = { nota: 0, motivo: "aberto" };
+  else if (r.mn === 0) mn = o.man === "cinco" ? { nota: 5, motivo: "semcard" } : null;
+  else { const n = r.mmed <= 7 ? 5 : r.mmed <= 14 ? 4 : r.mmed <= 21 ? 3 : r.mmed <= 28 ? 2 : r.mmed <= 35 ? 1 : 0; mn = { nota: n, motivo: "media" }; }
+  b.manut = mn ? { ...mn, pts: mn.nota / 5 * P.manut } : null;
+  // cards
+  b.cards = { v: r.cards, pts: r.cards * P.cards };
+  const total = Object.values(P).reduce((a, c) => a + c, 0);
+  const presentes = Object.keys(P).filter(k => b[k] != null);
+  const somaPesos = presentes.reduce((a, k) => a + P[k], 0);
+  const soma = presentes.reduce((a, k) => a + b[k].pts, 0);
+  const base = somaPesos ? soma * total / somaPesos : 0;
+  const bInd = r.bi[0] + r.bi[1] + r.bi[2];
+  const bAir = r.a != null && r.a >= 4.9 ? 5 : 0;
+  const bonus = Math.min(BONUS_TETO, bInd + bAir);
+  const pen = r.pen + oc.length;
+  const s = base + bonus - pen;
+  return { P, b, oc, total, somaPesos, soma, base, bInd, bAir, bonus, pen, s, f: faixa(s) };
+}
+
+let C = new Map();
+const med = a => { const s = [...a].sort((x, y) => x - y); return s[Math.floor(s.length / 2)]; };
+
+function cenarios(o) {
+  const exc = R.filter(r => r.fa === "Excelente");
+  const card = (t, rule, fx, sc, cls) => {
+    const cnt = Object.fromEntries(F.map(f => [f, R.filter(r => fx(r) === f).length]));
+    return `<div class="card ${cls}"><h3>${t}</h3><p class="rule">${rule}</p>
+      <div class="bar" role="img" aria-label="${F.map(f => f + " " + cnt[f]).join(", ")}">${F.map(f => cnt[f] ? `<span style="width:${cnt[f] / R.length * 100}%;background:${COR[f]}"></span>` : "").join("")}</div>
+      <div class="counts">${F.map(f => `<div><span><i class="dot" style="background:${COR[f]}"></i>${f}</span><b>${cnt[f]}</b></div>`).join("")}</div>
+      <div class="kpi"><span>Mediana do score</span><b>${br(med(R.map(sc)), 1)}</b></div>
+      <div class="kpi">${cls === "hoje" ? `<span>Excelente</span><b>${exc.length}</b>` : `<span>Excelente de hoje que continuam</span><b>${exc.filter(r => fx(r) === "Excelente").length} de ${exc.length}</b>`}</div></div>`;
+  };
+  let html = card("Hoje (publicado)", "Escala até 125, com consultoria, comunicação e bases paradas.", r => r.fa, r => r.sa, "hoje");
+  for (const esc of [125, 115, 110]) {
+    const oo = { ...o, esc }, M = new Map(R.map(r => [r.h, calcula(r, oo)]));
+    const P = PESOS[esc];
+    html += card(`Máximo ${esc}`, `Notas ${P.notas} · Avaliações ${P.aval} · Uso ${P.uso} · Manutenção ${P.manut} · Cards ${P.cards} · Bônus até ${BONUS_TETO}.`, r => M.get(r.h).f, r => M.get(r.h).s, esc === o.esc ? "sel" : "");
+  }
+  $("scen").innerHTML = html;
+}
+
+function regras(o) {
+  const P = PESOS[o.esc];
+  const tabDeg = (lims, fmt) => `<table><tbody>${[5, 4, 3, 2, 1].map(n => `<tr><td>${notaChip(n)}</td><td>${fmt(lims[n - 1])} ou mais</td></tr>`).join("")}<tr><td>${notaChip(0)}</td><td>abaixo de ${fmt(lims[0])}</td></tr></tbody></table>`;
+  const notas = o.not === "degraus"
+    ? `${tabDeg(DEG.notas, v => br(v, 2))}<p>Média de check-in e limpeza dos últimos 3 meses (Airbnb 60%, outras OTAs 40%). Nota 5 só a partir de 4,80.</p>`
+    : `<p>Como hoje: (média − 4,0) × ${P.notas}. Média 4,0 vale 0; só 5,0 vale os ${P.notas} pontos. Média de check-in e limpeza dos últimos 3 meses (Airbnb 60%, outras OTAs 40%).</p>`;
+  $("rules").innerHTML = `
+    <div class="rule-box"><h3>${BLOCO.notas}<span>${P.notas} pts</span></h3>${notas}</div>
+    <div class="rule-box"><h3>${BLOCO.aval}<span>${P.aval} pts</span></h3>${tabDeg(DEG.aval, pc)}<p>Abaixo de 50%: zera e leva ocorrência leve (−1).</p></div>
+    <div class="rule-box"><h3>${BLOCO.uso}<span>${P.uso} pts</span></h3>${tabDeg(DEG.uso, pc)}<p>Média de duas notas: <b>pedido de avaliação</b> (% das reservas Airbnb) e <b>limpeza completa</b> (% das limpezas com agente, checklist e pelo menos 1 foto). Cada uma abaixo de 50%: zera e leva ocorrência leve (−1).</p></div>
+    <div class="rule-box"><h3>${BLOCO.manut}<span>${P.manut} pts</span></h3><table><tbody>${[5, 4, 3, 2, 1].map((n, i) => `<tr><td>${notaChip(n)}</td><td>média até ${MAN[i]} dias</td></tr>`).join("")}<tr><td>${notaChip(0)}</td><td>média acima de 35 dias ou qualquer card aberto há mais de 35 dias</td></tr></tbody></table>
+      <p>Regra atual do fechamento: dias do envio à franquia (mais 7 de carência se não urgente) até a evidência, nos cards concluídos no mês. Cards do proprietário não contam. ${o.man === "cinco" ? "Sem card concluído no mês: nota 5." : "Sem card concluído no mês: o bloco não entra e o score é proporcional aos outros."}</p></div>
+    <div class="rule-box"><h3>${BLOCO.cards}<span>${P.cards} pts</span></h3><p>Como hoje: % dos cards de check-in e checkout fechados no mês × ${P.cards}.</p></div>
+    <div class="rule-box"><h3>Bônus e ocorrências<span>até +${BONUS_TETO}</span></h3><p>Bônus: indicações (como hoje) e <b>+5 com Airbnb 4,90 ou mais</b>. O total do bônus não passa de ${BONUS_TETO}.</p><p>Ocorrências do mês tiram os pontos do app de Qualidade, mais −1 por critério abaixo de 50%.</p></div>`;
+  const total = Object.values(P).reduce((a, c) => a + c, 0);
+  $("escHelp").textContent = `Blocos somam ${total}; com bônus, o máximo é ${total + BONUS_TETO}. Excelente a partir de 95.`;
+  $("notHelp").textContent = o.not === "degraus" ? "Degraus de 0 a 5; nota 5 só com média 4,80 ou mais." : "Conta de hoje: linear de 4,0 a 5,0.";
+  $("manHelp").textContent = o.man === "cinco" ? "Regra atual: sem card concluído no mês, nota 5." : "Sem card concluído no mês, o bloco sai e o score é proporcional.";
+}
+
+function medias(o) {
+  const P = PESOS[o.esc];
+  const linhas = Object.keys(P).map(k => {
+    const v = R.map(r => C.get(r.h).b[k]).filter(x => x != null);
+    const m = v.reduce((a, x) => a + x.pts, 0) / v.length;
+    return `<tr><td>${BLOCO[k]}</td><td class="num">${br(m, 1)}</td><td class="num">${P[k]}</td><td class="num">${br(m / P[k] * 100, 0)}%</td><td class="num">${R.length - v.length || ""}</td></tr>`;
+  }).join("");
+  const mb = R.reduce((a, r) => a + C.get(r.h).bonus, 0) / R.length;
+  const mp = R.reduce((a, r) => a + C.get(r.h).pen, 0) / R.length;
+  const noc = R.reduce((a, r) => a + C.get(r.h).oc.length, 0);
+  $("medias").innerHTML = `<thead><tr><th>Bloco</th><th class="num">Média da rede</th><th class="num">Máximo</th><th class="num">% do máximo</th><th class="num">Sem dado</th></tr></thead><tbody>${linhas}
+    <tr><td>Bônus</td><td class="num">+${br(mb, 1)}</td><td class="num">${BONUS_TETO}</td><td class="num">${br(mb / BONUS_TETO * 100, 0)}%</td><td></td></tr>
+    <tr><td>Ocorrências (inclui ${noc} novas por ficar abaixo de 50%)</td><td class="num">−${br(mp, 1)}</td><td></td><td></td><td></td></tr></tbody>`;
+}
+
+function proxNota(v, lims, fmt) { const n = degrau(v, lims); return n === 5 ? "Nota máxima." : `Nota ${n + 1} a partir de ${fmt(lims[n])}.`; }
+function boletim(r, o) {
+  const c = C.get(r.h), P = c.P, b = c.b;
+  const linha = (nome, res, nota, pts, peso, prox, cls = "") => `<tr${cls ? ` class="${cls}"` : ""}><td><b>${nome}</b></td><td>${res}</td><td>${nota}</td><td class="num">${pts}</td><td class="prox">${prox}</td></tr>`;
+  let h = "";
+  // notas
+  if (!b.notas) h += linha(BLOCO.notas, "sem avaliações", "", "não entra", P.notas, "O bloco sai e o score é proporcional.");
+  else {
+    const det = `${r.a != null ? "Airbnb " + br(r.a, 2) : ""}${r.a != null && r.o != null ? " · " : ""}${r.o != null ? "OTAs " + br(r.o, 2) : ""}${r.a != null && r.o != null ? ` → média ${br(b.notas.comb, 2)}` : ""}`;
+    h += o.not === "degraus"
+      ? linha(BLOCO.notas, det, notaChip(b.notas.nota), `${br(b.notas.pts, 1)} de ${P.notas}`, P.notas, proxNota(b.notas.comb, DEG.notas, v => br(v, 2)))
+      : linha(BLOCO.notas, det, "", `${br(b.notas.pts, 1)} de ${P.notas}`, P.notas, `(${br(b.notas.comb, 2)} − 4,00) × ${P.notas}. Cada 0,10 a mais vale ${br(P.notas / 10, 1)} pontos.`);
+  }
+  // avaliações
+  h += linha(BLOCO.aval, pc(b.aval.v), notaChip(b.aval.nota), `${br(b.aval.pts, 1)} de ${P.aval}`, P.aval,
+    (b.aval.v < 0.5 ? `<span class="oc">Abaixo de 50%: ocorrência leve.</span> ` : "") + proxNota(b.aval.v, DEG.aval, pc));
+  // uso
+  const sub = b.uso ? b.uso.sub : b.usoSub;
+  h += linha(BLOCO.uso, b.uso ? "média das duas notas" : "sem dado", b.uso ? br(b.uso.nota, 1) : "", b.uso ? `${br(b.uso.pts, 1)} de ${P.uso}` : "não entra", P.uso, b.uso ? "" : "O bloco sai e o score é proporcional.");
+  for (const [k, nome, base] of [["ped", "Pedido de avaliação", `${r.nair} reservas Airbnb`], ["lim", "Limpeza completa", `${r.nlim} limpezas`]]) {
+    const x = sub[k];
+    h += linha(nome, x ? `${pc(x.v)} <span class="muted">(${base})</span>` : `sem dado <span class="muted">(${base})</span>`, x ? notaChip(x.nota) : "", "", "",
+      x ? (x.v < 0.5 ? `<span class="oc">Abaixo de 50%: ocorrência leve.</span> ` : "") + proxNota(x.v, DEG.uso, pc) : "Menos de 5 no mês; não entra.", "sub");
+  }
+  // manutenção
+  if (!b.manut) h += linha(BLOCO.manut, "nenhum card concluído no mês", "", "não entra", P.manut, "O bloco sai e o score é proporcional.");
+  else {
+    const res = b.manut.motivo === "aberto" ? `${r.m35} card(s) aberto(s) há mais de 35 dias`
+      : b.manut.motivo === "semcard" ? "nenhum card concluído no mês"
+      : `${r.mn} card(s) concluído(s), média de ${br(r.mmed, 1)} dias`;
+    const prox = b.manut.motivo === "aberto" ? "Zera enquanto houver card aberto há mais de 35 dias."
+      : b.manut.motivo === "semcard" ? "Regra atual: sem card, nota 5."
+      : b.manut.nota === 5 ? "Nota máxima." : `Nota ${b.manut.nota + 1} com média de até ${MAN[4 - b.manut.nota]} dias.`;
+    h += linha(BLOCO.manut, res, notaChip(b.manut.nota), `${br(b.manut.pts, 1)} de ${P.manut}`, P.manut, prox);
+  }
+  h += linha(BLOCO.cards, pc(b.cards.v), "", `${br(b.cards.pts, 1)} de ${P.cards}`, P.cards, `% fechado × ${P.cards}.`);
+  const prop = c.somaPesos < c.total ? `<div class="ln"><span>Convertido para ${c.total}</span><span>${br(c.soma, 1)} de ${c.somaPesos} → ${br(c.base, 1)}</span></div>` : "";
+  const bonusTxt = [c.bInd ? `indicações +${br(c.bInd, 0)}` : "", c.bAir ? "Airbnb ≥ 4,90 +5" : ""].filter(Boolean).join(", ");
+  return `<div class="boletim"><div class="tbl"><table>
+      <thead><tr><th>Bloco</th><th>Resultado</th><th>Nota</th><th class="num">Pontos</th><th>Próxima nota</th></tr></thead>
+      <tbody>${h}</tbody></table></div>
+    <div class="res">
+      <div class="ln"><span>Pontos dos blocos</span><span>${br(c.soma, 1)} de ${c.somaPesos}</span></div>${prop}
+      <div class="ln"><span>Bônus${bonusTxt ? ` (${bonusTxt}${c.bInd + c.bAir > BONUS_TETO ? ", teto " + BONUS_TETO : ""})` : ""}</span><span>+${br(c.bonus, 0)}</span></div>
+      <div class="ln"><span>Ocorrências do mês</span><span>${r.pen ? "−" + br(r.pen, 0) : "0"}</span></div>
+      ${c.oc.length ? `<div class="ln"><span class="oc">Novas (abaixo de 50%)</span><span class="oc">−${c.oc.length}</span></div><span class="why">${c.oc.join("; ")}.</span>` : ""}
+      <div class="ln tot"><span>Score</span><span>${br(c.s, 1)} <span class="pill f-${c.f}">${c.f}</span></span></div>
+      <span class="why">Hoje: ${br(r.sa, 1)} · ${r.fa}.</span>
+    </div></div>`;
+}
+
+const abertos = new Set();
+function tabela(o) {
+  const P = PESOS[o.esc], ks = Object.keys(P);
+  const curto = { notas: "Notas", aval: "Aval.", uso: "Uso", manut: "Manut.", cards: "Cards" };
+  $("th").innerHTML = `<tr><th>Franquia</th><th class="sc num">Hoje</th><th class="sc num">Novo</th>${ks.map((k, i) => `<th class="num${i === 0 ? " sc" : ""}">${curto[k]}<br><span class="muted">de ${P[k]}</span></th>`).join("")}<th class="sc num">Bônus</th><th class="num">Ocorr.</th></tr>`;
+  const q = $("q").value.trim().toLowerCase(), fil = $("filtro").value, ord = $("ordem").value;
+  let L = R.filter(r => r.n.toLowerCase().includes(q));
+  if (fil === "caiu2") L = L.filter(r => nivel(C.get(r.h).f) - nivel(r.fa) >= 2);
+  if (fil === "excCai") L = L.filter(r => r.fa === "Excelente" && C.get(r.h).f !== "Excelente");
+  if (fil === "oc") L = L.filter(r => C.get(r.h).oc.length);
+  const S = { queda: (a, b) => (nivel(C.get(b.h).f) - nivel(b.fa)) - (nivel(C.get(a.h).f) - nivel(a.fa)) || C.get(a.h).s - C.get(b.h).s,
+    nome: (a, b) => a.n.localeCompare(b.n, "pt-BR"), novo: (a, b) => C.get(b.h).s - C.get(a.h).s, hoje: (a, b) => b.sa - a.sa };
+  L.sort(S[ord]);
+  $("cont").textContent = `${L.length} de ${R.length}`;
+  const cols = 3 + ks.length + 2;
+  $("tb").innerHTML = L.map(r => {
+    const c = C.get(r.h), d = nivel(c.f) - nivel(r.fa);
+    const dl = d > 0 ? `<span class="delta">−${d}</span>` : d < 0 ? `<span class="delta up">+${-d}</span>` : "";
+    const ab = abertos.has(r.h);
+    return `<tr class="row${ab ? " open" : ""}" data-h="${r.h}"><td class="name">${r.n}<small><button class="toggle" type="button" aria-expanded="${ab}">${ab ? "Fechar boletim" : "Ver boletim"}</button> · ID ${r.h}</small></td>
+      <td class="sc"><div class="cell"><span class="s">${br(r.sa, 1)}</span><span class="pill f-${r.fa}">${r.fa}</span></div></td>
+      <td class="sc"><div class="cell">${dl}<span class="s">${br(c.s, 1)}</span><span class="pill f-${c.f}">${c.f}</span></div></td>
+      ${ks.map((k, i) => `<td class="num${i === 0 ? " sc" : ""}">${c.b[k] == null ? "–" : br(c.b[k].pts, 1)}</td>`).join("")}
+      <td class="sc num">${c.bonus ? "+" + c.bonus : "0"}</td><td class="num">${c.pen ? "−" + c.pen : "0"}</td></tr>` +
+      (ab ? `<tr class="det"><td colspan="${cols}">${boletim(r, o)}</td></tr>` : "");
+  }).join("");
+}
+
+function tudo() { const o = opcoes(); C = new Map(R.map(r => [r.h, calcula(r, o)])); regras(o); cenarios(o); medias(o); tabela(o); }
+$("tb").addEventListener("click", e => {
+  const tr = e.target.closest("tr.row"); if (!tr) return;
+  const h = +tr.dataset.h; abertos.has(h) ? abertos.delete(h) : abertos.add(h); tabela(opcoes());
+});
+["q", "filtro", "ordem"].forEach(id => $(id).addEventListener("input", () => tabela(opcoes())));
+document.querySelectorAll('input[name="esc"], input[name="not"], input[name="man"]').forEach(el => el.addEventListener("change", tudo));
+tudo();
+</script>
+
+</body>
+</html>
