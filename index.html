@@ -104,6 +104,10 @@ a { color: var(--accent); }
 
 <style>
 .pill.chg { background: var(--decide-bg); color: var(--decide); }
+.queda td.why { color: var(--muted); font-size: 13px; min-width: 220px; white-space: normal; }
+.queda td { vertical-align: middle; }
+.meter { display: inline-block; vertical-align: middle; width: 120px; height: 10px; border-radius: 5px; background: var(--line); overflow: hidden; margin-right: 8px; }
+.meter span { display: block; height: 100%; background: var(--accent); }
 .regras { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 12px; }
 .regras .opt table { font-size: 13px; }
 .regras .opt td { padding: 4px 8px; }
@@ -249,16 +253,19 @@ a { color: var(--accent); }
     </tbody>
   </table></div>
   <h3>De onde vem a queda (proposta de 115)</h3>
-  <div class="tbl"><table>
-    <thead><tr><th>Bloco</th><th class="num">Média da rede</th><th class="num">Máximo</th><th class="num">% do máximo</th></tr></thead>
+  <p>Quantos pontos a franquia média de setembro conseguiria em cada bloco, e quantos ela deixa de ganhar. A barra mostra a parte do bloco que a rede já cumpre.</p>
+  <div class="tbl"><table class="queda">
+    <thead><tr><th>Bloco</th><th class="num">Pontos possíveis</th><th class="num">A franquia média faz</th><th class="num">Deixa de ganhar</th><th>Quanto do bloco a rede cumpre</th><th>Por quê</th></tr></thead>
     <tbody>
-      <tr><td>Notas dos hóspedes</td><td class="num">35,6</td><td class="num">45</td><td class="num">79%</td></tr>
-      <tr><td>Avaliações por checkout</td><td class="num">3,9</td><td class="num">20</td><td class="num">20%</td></tr>
-      <tr><td>Uso do sistema</td><td class="num">0,4</td><td class="num">10</td><td class="num">4%</td></tr>
-      <tr><td>Manutenção</td><td class="num">15,2</td><td class="num">20</td><td class="num">76%</td></tr>
-      <tr><td>Cards</td><td class="num">8,9</td><td class="num">10</td><td class="num">89%</td></tr>
-      <tr><td>Bônus</td><td class="num">+3,0</td><td class="num">10</td><td class="num"></td></tr>
-      <tr><td>Ocorrências</td><td class="num">−4,1</td><td class="num"></td><td class="num"></td></tr>
+<tr><td><b>Notas dos hóspedes</b></td><td class="num">45</td><td class="num">35,6</td><td class="num">9,4</td><td><div class="meter" role="img" aria-label="79% dos pontos"><span style="width:79%"></span></div><span class="muted">79%</span></td><td class="why">A maioria tem nota 4 ou 5 no Airbnb; nas outras OTAs as notas são mais baixas.</td></tr>
+<tr><td><b>Avaliações por checkout</b></td><td class="num">20</td><td class="num">3,9</td><td class="num">16,1</td><td><div class="meter" role="img" aria-label="20% dos pontos"><span style="width:20%"></span></div><span class="muted">20%</span></td><td class="why">49 de 101 franquias ficam abaixo de 50% e zeram o bloco.</td></tr>
+<tr><td><b>Uso do sistema</b></td><td class="num">10</td><td class="num">0,4</td><td class="num">9,6</td><td><div class="meter" role="img" aria-label="4% dos pontos"><span style="width:4%"></span></div><span class="muted">4%</span></td><td class="why">Quase ninguém pede avaliação nem completa a limpeza no Sapron: 90 franquias zeram.</td></tr>
+<tr><td><b>Manutenção</b></td><td class="num">20</td><td class="num">15,2</td><td class="num">4,8</td><td><div class="meter" role="img" aria-label="76% dos pontos"><span style="width:76%"></span></div><span class="muted">76%</span></td><td class="why">A maioria resolve em até 7 dias; 17 franquias zeram por card aberto há mais de 35 dias ou média alta.</td></tr>
+<tr><td><b>Cards de check-in e checkout</b></td><td class="num">10</td><td class="num">8,9</td><td class="num">1,1</td><td><div class="meter" role="img" aria-label="89% dos pontos"><span style="width:89%"></span></div><span class="muted">89%</span></td><td class="why">Bloco quase cheio: 30 franquias fecham 100% dos cards.</td></tr>
+      <tr class="grp"><td>Soma dos blocos</td><td class="num">105</td><td class="num">64,0</td><td class="num">41,0</td><td></td><td></td></tr>
+      <tr><td>Bônus</td><td class="num">até +10</td><td class="num">+3,0</td><td></td><td></td><td class="why">Indicações e Airbnb a partir de 4,90.</td></tr>
+      <tr><td>Ocorrências</td><td class="num"></td><td class="num">−4,1</td><td></td><td></td><td class="why">As do mês, mais 1 ponto por critério abaixo de 50%.</td></tr>
+      <tr class="grp"><td>Score médio da rede</td><td class="num">115</td><td class="num">63,1</td><td></td><td></td><td class="why">Regular é a partir de 65 e Excelente a partir de 95.</td></tr>
     </tbody>
   </table></div>
   <ul>
